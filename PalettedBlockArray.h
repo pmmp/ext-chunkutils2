@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <array>
 #include <bitset>
@@ -42,16 +43,18 @@ public:
 
 	virtual bool replaceAll(Block from, Block to) = 0;
 
-	virtual bool convertFrom(IPalettedBlockArray &otherArray) = 0;
+	virtual bool convertFrom(IPalettedBlockArray<Block, Word> &otherArray) = 0;
 };
 
 template <uint8_t BITS_PER_BLOCK, typename Block, typename Word>
 class PalettedBlockArray : public IPalettedBlockArray<Block, Word> {
+private:
+	using Base = IPalettedBlockArray<Block, Word>;
 public:
 	static const unsigned char BLOCKS_PER_WORD = sizeof(Word) * CHAR_BIT / BITS_PER_BLOCK;
 	static const Word BLOCK_MASK = (1 << BITS_PER_BLOCK) - 1;
-	static const unsigned short WORD_COUNT = ARRAY_CAPACITY / BLOCKS_PER_WORD + (ARRAY_CAPACITY % BLOCKS_PER_WORD ? 1 : 0);
-	static const unsigned short MAX_PALETTE_SIZE = (1 << BITS_PER_BLOCK) < ARRAY_CAPACITY ? (1 << BITS_PER_BLOCK) : ARRAY_CAPACITY;
+	static const unsigned short WORD_COUNT = Base::ARRAY_CAPACITY / BLOCKS_PER_WORD + (Base::ARRAY_CAPACITY % BLOCKS_PER_WORD ? 1 : 0);
+	static const unsigned short MAX_PALETTE_SIZE = (1 << BITS_PER_BLOCK) < Base::ARRAY_CAPACITY ? (1 << BITS_PER_BLOCK) : Base::ARRAY_CAPACITY;
 
 private:
 	std::array<Word, WORD_COUNT> words;
@@ -62,11 +65,11 @@ private:
 	unsigned short nextPaletteIndex = 0;
 
 	inline unsigned short getArrayOffset(unsigned char x, unsigned char y, unsigned char z) const {
-		return (x << (COORD_BIT_SIZE * 2)) | (z << COORD_BIT_SIZE) | y;
+		return (x << (Base::COORD_BIT_SIZE * 2)) | (z << Base::COORD_BIT_SIZE) | y;
 	}
 
 	inline void find(unsigned char x, unsigned char y, unsigned char z, unsigned short &wordIdx, unsigned char &shift) const {
-		assert(x < ARRAY_DIM && y < ARRAY_DIM && z < ARRAY_DIM);
+		assert(x < Base::ARRAY_DIM && y < Base::ARRAY_DIM && z < Base::ARRAY_DIM);
 		unsigned short idx = getArrayOffset(x, y, z);
 
 		wordIdx = idx / BLOCKS_PER_WORD;
@@ -125,9 +128,9 @@ public:
 		std::bitset<MAX_PALETTE_SIZE> hasFound;
 		unsigned short count = 0;
 
-		for (unsigned char x = 0; x < ARRAY_DIM; ++x) {
-			for (unsigned char z = 0; z < ARRAY_DIM; ++z) {
-				for (unsigned char y = 0; y < ARRAY_DIM; ++y) {
+		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
+			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
+				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
 					unsigned short paletteOffset = getPaletteOffset(x, y, z);
 					if (!hasFound[paletteOffset]) {
 						++count;
@@ -167,7 +170,7 @@ public:
 			}
 			offset = (short)nextPaletteIndex++;
 			palette[offset] = val;
-			mayNeedGC = true;
+			this->mayNeedGC = true;
 		}
 
 		unsigned short wordIdx;
@@ -193,10 +196,10 @@ public:
 		return retval;
 	}
 
-	bool convertFrom(IPalettedBlockArray &otherArray) {
-		for (unsigned char x = 0; x < ARRAY_DIM; ++x) {
-			for (unsigned char z = 0; z < ARRAY_DIM; ++z) {
-				for (unsigned char y = 0; y < ARRAY_DIM; ++y) {
+	bool convertFrom(IPalettedBlockArray<Block, Word> &otherArray) {
+		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
+			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
+				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
 					if (!set(x, y, z, otherArray.get(x, y, z))) {
 						return false;
 					}
