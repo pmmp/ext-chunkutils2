@@ -23,6 +23,7 @@
 #endif
 
 #include "BlockArrayContainer.h"
+#include "SubChunkConverter.h"
 
 extern "C" {
 #include "php.h"
@@ -58,7 +59,7 @@ zend_object* paletted_block_array_new(zend_class_entry *class_type) {
 	object_properties_init(&object->std, class_type);
 
 	object->std.handlers = &paletted_block_array_handlers;
-	
+
 	return &object->std;
 }
 
@@ -76,66 +77,74 @@ void paletted_block_array_free(zend_object *obj) {
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray___construct, 0, 0, 0)
 	ZEND_ARG_TYPE_INFO(0, bitsPerBlock, IS_LONG, 0)
-	ZEND_ARG_TYPE_INFO(0, wordArray, IS_STRING, 0)
-	ZEND_ARG_ARRAY_INFO(0, palette, 0)
 ZEND_END_ARG_INFO()
 
 PHP_METHOD(PhpPalettedBlockArray, __construct) {
 	zend_long bitsPerBlock = 1;
-	zend_string *wordArrayZstr = nullptr;
-	zval *paletteZarray = nullptr;
 
-	//this should really be split into several overloads
-	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 0, 3)
+	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 0, 1)
 		Z_PARAM_OPTIONAL
+		Z_PARAM_LONG(bitsPerBlock)
+	ZEND_PARSE_PARAMETERS_END();
+
+	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
+	try {
+		intern->container = new BlockArrayContainer<>((uint8_t)bitsPerBlock);
+	}
+	catch (std::exception& e) {
+		zend_throw_exception_ex(spl_ce_RuntimeException, 0, e.what());
+	}
+}
+
+
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_PalettedBlockArray_fromData, 0, 3, pocketmine\\level\\format\\PalettedBlockArray, 0)
+	ZEND_ARG_TYPE_INFO(0, bitsPerBlock, IS_LONG, 0)
+	ZEND_ARG_TYPE_INFO(0, wordArray, IS_STRING, 0)
+	ZEND_ARG_ARRAY_INFO(0, palette, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(PhpPalettedBlockArray, fromData) {
+	zend_long bitsPerBlock = 1;
+	zend_string *wordArrayZstr;
+	zval *paletteZarray;
+
+	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 3, 3)
 		Z_PARAM_LONG(bitsPerBlock)
 		Z_PARAM_STR(wordArrayZstr)
 		Z_PARAM_ARRAY(paletteZarray)
 	ZEND_PARSE_PARAMETERS_END();
 
-	if (wordArrayZstr != nullptr && paletteZarray == nullptr) {
-		zend_throw_exception(spl_ce_InvalidArgumentException, "cannot specify a word array without a corresponding palette", 0);
-		return;
-	}
-	if (wordArrayZstr != nullptr && (ZSTR_LEN(wordArrayZstr) % sizeof(Word)) != 0) {
+	if ((ZSTR_LEN(wordArrayZstr) % sizeof(Word)) != 0) {
 		zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "word array length should be a multiple of %d, got a length of %d", sizeof(Word), ZSTR_LEN(wordArrayZstr));
 		return;
 	}
 
-	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
+	object_init_ex(return_value, paletted_block_array_entry);
+	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
+
+	std::vector<Word> wordArray((Word *)ZSTR_VAL(wordArrayZstr), (Word *)(ZSTR_VAL(wordArrayZstr) + ZSTR_LEN(wordArrayZstr)));
+	std::vector<Block> palette;
+
+	HashTable *paletteHt = Z_ARRVAL_P(paletteZarray);
+	HashPosition pos;
+	zval *current;
+	Block b;
+
+	palette.reserve(paletteHt->nNumUsed);
+	for (
+		zend_hash_internal_pointer_reset_ex(paletteHt, &pos);
+		current = zend_hash_get_current_data_ex(paletteHt, &pos);
+		zend_hash_move_forward_ex(paletteHt, &pos)
+	) {
+		b = (Block)Z_LVAL_P(current);
+		palette.push_back(b);
+	}
 
 	try {
-		if (wordArrayZstr != nullptr && paletteZarray != nullptr) {
-			//convert to vectors
-
-			std::vector<Word> wordArray((Word *)ZSTR_VAL(wordArrayZstr), (Word *)(ZSTR_VAL(wordArrayZstr) + ZSTR_LEN(wordArrayZstr)));
-
-			std::vector<Block> palette;
-			HashTable *paletteHt = Z_ARRVAL_P(paletteZarray);
-			HashPosition pos;
-			zval *current;
-			Block b;
-
-			palette.reserve(paletteHt->nNumUsed);
-
-			for (
-				zend_hash_internal_pointer_reset_ex(paletteHt, &pos); 
-				current = zend_hash_get_current_data_ex(paletteHt, &pos);
-				zend_hash_move_forward_ex(paletteHt, &pos)
-			) {
-				b = (Block)Z_LVAL_P(current);
-				palette.push_back(b);
-			}
-
-			auto container = new BlockArrayContainer<>((uint8_t)bitsPerBlock, wordArray, palette);
-			intern->container = container;
-		}
-		else {
-			auto container = new BlockArrayContainer<>((uint8_t)bitsPerBlock);
-			intern->container = container;
-		}
+		intern->container = new BlockArrayContainer<>((uint8_t)bitsPerBlock, wordArray, palette);
 	}
 	catch (std::exception& e) {
+		zval_ptr_dtor(return_value);
 		zend_throw_exception_ex(spl_ce_RuntimeException, 0, e.what());
 	}
 }
@@ -237,6 +246,39 @@ PHP_METHOD(PhpPalettedBlockArray, set) {
 	intern->container->set(x, y, z, val);
 }
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray_replace, 0, 0, 2)
+	ZEND_ARG_TYPE_INFO(0, offset, IS_LONG, 0)
+	ZEND_ARG_TYPE_INFO(0, val, IS_LONG, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(PhpPalettedBlockArray, replace) {
+	zend_long offset, val;
+
+	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2)
+		Z_PARAM_LONG(offset)
+		Z_PARAM_LONG(val)
+	ZEND_PARSE_PARAMETERS_END();
+
+	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
+	intern->container->replace(offset, val);
+}
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray_replaceAll, 0, 0, 2)
+	ZEND_ARG_TYPE_INFO(0, oldVal, IS_LONG, 0)
+	ZEND_ARG_TYPE_INFO(0, newVal, IS_LONG, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(PhpPalettedBlockArray, replaceAll) {
+	zend_long oldVal, newVal;
+
+	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2)
+		Z_PARAM_LONG(oldVal)
+		Z_PARAM_LONG(newVal)
+	ZEND_PARSE_PARAMETERS_END();
+
+	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
+	intern->container->replaceAll(oldVal, newVal);
+}
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray_collectGarbage, 0, 0, 0)
 	ZEND_ARG_TYPE_INFO(0, force, _IS_BOOL, 0)
@@ -256,18 +298,100 @@ PHP_METHOD(PhpPalettedBlockArray, collectGarbage) {
 
 /* PHP-land PalettedBlockArray methods end */
 
+/* PHP-land SubChunkConverter methods */
+
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_SubChunkConverter_convertSubChunk, 0, 2, pocketmine\\level\\format\\PalettedBlockArray, 0)
+	ZEND_ARG_TYPE_INFO(0, idArray, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, metaArray, IS_STRING, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(PhpSubChunkConverter, convertSubChunkXZY) {
+	zend_string *idArray;
+	zend_string *metaArray;
+
+	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2)
+		Z_PARAM_STR(idArray)
+		Z_PARAM_STR(metaArray)
+	ZEND_PARSE_PARAMETERS_END();
+
+
+	object_init_ex(return_value, paletted_block_array_entry);
+	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
+	//TODO: needs length checks
+	intern->container = convertSubChunkXZY((uint8_t*)idArray->val, (uint8_t*)metaArray->val);
+}
+
+//TODO: repetetive, clean it up :(
+
+PHP_METHOD(PhpSubChunkConverter, convertSubChunkYZX) {
+	zend_string *idArray;
+	zend_string *metaArray;
+
+	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2)
+		Z_PARAM_STR(idArray)
+		Z_PARAM_STR(metaArray)
+	ZEND_PARSE_PARAMETERS_END();
+
+
+	object_init_ex(return_value, paletted_block_array_entry);
+	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
+	//TODO: needs length checks
+	intern->container = convertSubChunkYZX((uint8_t*)idArray->val, (uint8_t*)metaArray->val);
+}
+
+
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_SubChunkConverter_convertSubChunkFromLegacyColumn, 0, 3, pocketmine\\level\\format\\PalettedBlockArray, 0)
+	ZEND_ARG_TYPE_INFO(0, idArray, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, metaArray, IS_STRING, 0)
+	ZEND_ARG_TYPE_INFO(0, yOffset, IS_LONG, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
+	zend_string *idArray;
+	zend_string *metaArray;
+	zend_long yOffset;
+
+	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2)
+		Z_PARAM_STR(idArray)
+		Z_PARAM_STR(metaArray)
+		Z_PARAM_LONG(yOffset)
+	ZEND_PARSE_PARAMETERS_END();
+
+
+	object_init_ex(return_value, paletted_block_array_entry);
+	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
+	//TODO: needs length checks
+	//TODO: check for valid Y offset
+	intern->container = convertSubChunkFromLegacyColumn((uint8_t*)idArray->val, (uint8_t*)metaArray->val, (uint8_t)yOffset);
+}
+
+/* PHP-land SubChunkConverter methods end */
+
+
 
 zend_function_entry paletted_block_array_class_methods[] = {
 	PHP_ME(PhpPalettedBlockArray, __construct, arginfo_PalettedBlockArray___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+	PHP_ME(PhpPalettedBlockArray, fromData, arginfo_PalettedBlockArray_fromData, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhpPalettedBlockArray, getWordArray, arginfo_PalettedBlockArray_getWordArray, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, getPalette, arginfo_PalettedBlockArray_getPalette, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, getMaxPaletteSize, arginfo_PalettedBlockArray_getMaxPaletteSize, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, getBitsPerBlock, arginfo_PalettedBlockArray_getBitsPerBlock, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, get, arginfo_PalettedBlockArray_get, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, set, arginfo_PalettedBlockArray_set, ZEND_ACC_PUBLIC)
+	PHP_ME(PhpPalettedBlockArray, replace, arginfo_PalettedBlockArray_replace, ZEND_ACC_PUBLIC)
+	PHP_ME(PhpPalettedBlockArray, replaceAll, arginfo_PalettedBlockArray_replaceAll, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, collectGarbage, arginfo_PalettedBlockArray_collectGarbage, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
+
+zend_function_entry subchunk_converter_class_methods[] = {
+	PHP_ME(PhpSubChunkConverter, convertSubChunkXZY, arginfo_SubChunkConverter_convertSubChunk, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PhpSubChunkConverter, convertSubChunkYZX, arginfo_SubChunkConverter_convertSubChunk, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PhpSubChunkConverter, convertSubChunkFromLegacyColumn, arginfo_SubChunkConverter_convertSubChunkFromLegacyColumn, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_FE_END
+};
+
+
 
 /* {{{ PHP_MINIT_FUNCTION
  */
@@ -281,6 +405,9 @@ PHP_MINIT_FUNCTION(mcpe_paletted_block_array)
 	INIT_CLASS_ENTRY(ce, "pocketmine\\level\\format\\PalettedBlockArray", paletted_block_array_class_methods);
 	ce.create_object = paletted_block_array_new;
 	paletted_block_array_entry = zend_register_internal_class(&ce);
+
+	INIT_CLASS_ENTRY(ce, "pocketmine\\level\\format\\io\\SubChunkConverter", subchunk_converter_class_methods);
+	zend_register_internal_class(&ce);
 
 	return SUCCESS;
 }
@@ -304,21 +431,12 @@ PHP_MINFO_FUNCTION(mcpe_paletted_block_array)
 }
 /* }}} */
 
-/* {{{ mcpe_paletted_block_array_functions[]
- *
- * Every user visible function must have an entry in mcpe_paletted_block_array_functions[].
- */
-const zend_function_entry mcpe_paletted_block_array_functions[] = {
-	PHP_FE_END	/* Must be the last line in mcpe_paletted_block_array_functions[] */
-};
-/* }}} */
-
 /* {{{ mcpe_paletted_block_array_module_entry
  */
 zend_module_entry mcpe_paletted_block_array_module_entry = {
 	STANDARD_MODULE_HEADER,
 	"mcpe_paletted_block_array",
-	mcpe_paletted_block_array_functions,
+	NULL,
 	PHP_MINIT(mcpe_paletted_block_array),
 	PHP_MSHUTDOWN(mcpe_paletted_block_array),
 	NULL, /* RINIT */

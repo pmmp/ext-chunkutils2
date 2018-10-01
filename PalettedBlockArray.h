@@ -1,4 +1,6 @@
 #pragma once
+#ifndef HAVE_PALETTED_BLOCK_ARRAY_H
+#define HAVE_PALETTED_BLOCK_ARRAY_H
 
 #include <assert.h>
 #include <stdint.h>
@@ -41,7 +43,8 @@ public:
 	virtual Block get(unsigned char x, unsigned char y, unsigned char z) const = 0;
 	virtual bool set(unsigned char x, unsigned char y, unsigned char z, Block val) = 0;
 
-	virtual bool replaceAll(Block from, Block to) = 0;
+	virtual void replace(unsigned short offset, Block val) = 0;
+	virtual void replaceAll(Block from, Block to) = 0;
 
 	virtual bool convertFrom(IPalettedBlockArray<Block, Word> &otherArray) = 0;
 };
@@ -87,7 +90,7 @@ private:
 public:
 
 	PalettedBlockArray() {
-		memset(words.data(), 0, words.size());
+		memset(words.data(), 0, sizeof(words));
 	}
 
 	PalettedBlockArray(std::vector<Word> &wordArray, std::vector<Block> &paletteEntries) {
@@ -181,19 +184,22 @@ public:
 		return true;
 	}
 
-	bool replaceAll(Block from, Block to) {
+	void replace(unsigned short offset, Block val) {
+		if (offset >= nextPaletteIndex) {
+			throw std::invalid_argument("offset must be less than palette size " + std::to_string(nextPaletteIndex));
+		}
+		palette[offset] = val;
+	}
+
+	void replaceAll(Block from, Block to) {
 		//TODO: clean up any duplicates
-		bool retval = false;
 		for (short i = 0; i < nextPaletteIndex; ++i) {
 			if (palette[i] == from) {
 				palette[i] = to;
 
 				//don't return here, because there might be duplicated block states from previous replace operations
-				retval = true;
 			}
 		}
-
-		return retval;
 	}
 
 	bool convertFrom(IPalettedBlockArray<Block, Word> &otherArray) {
@@ -210,3 +216,5 @@ public:
 		return true;
 	}
 };
+
+#endif

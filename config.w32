@@ -4,7 +4,7 @@
 ARG_ENABLE("mcpe-paletted-block-array", "Enable PocketMine chunk block-arrays extension", "no");
 
 if (PHP_MCPE_PALETTED_BLOCK_ARRAY != "no") {
-	EXTENSION("mcpe_paletted_block_array", "mcpe_paletted_block_array.cpp", PHP_MCPE_PALETTED_BLOCK_ARRAY_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
+	EXTENSION("mcpe_paletted_block_array", "mcpe_paletted_block_array.cpp SubChunkConverter.cpp", PHP_MCPE_PALETTED_BLOCK_ARRAY_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1");
 	ADD_FLAG("CFLAGS_MCPE_PALETTED_BLOCK_ARRAY", "/EHsc");
 }
 

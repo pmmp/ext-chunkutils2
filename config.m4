@@ -11,5 +11,5 @@ if test "$PHP_MCPE_PALETTED_BLOCK_ARRAY" != "no"; then
   PHP_ADD_LIBRARY(stdc++, 1, MCPE_PALETTED_BLOCK_ARRAY_SHARED_LIBADD)
   PHP_SUBST(MCPE_PALETTED_BLOCK_ARRAY_SHARED_LIBADD)
 
-  PHP_NEW_EXTENSION(mcpe_paletted_block_array, mcpe_paletted_block_array.cpp, $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
+  PHP_NEW_EXTENSION(mcpe_paletted_block_array, "mcpe_paletted_block_array.cpp SubChunkConverter.cpp", $ext_shared,, -DZEND_ENABLE_STATIC_TSRMLS_CACHE=1)
 fi

@@ -1,4 +1,6 @@
 #pragma once
+#ifndef HAVE_BLOCK_ARRAY_CONTAINER_H
+#define HAVE_BLOCK_ARRAY_CONTAINER_H
 
 #include <exception>
 #include <string>
@@ -45,6 +47,26 @@ private:
 		}
 
 #undef SWITCH_CASE
+	}
+
+	static uint8_t getMinBitsPerBlock(unsigned short nBlocks) {
+#define CONDITION(i) \
+		if (nBlocks <= PalettedBlockArray<i, Block, Word>::MAX_PALETTE_SIZE) { \
+			return i; \
+		}
+
+		CONDITION(1)
+		CONDITION(2)
+		CONDITION(3)
+		CONDITION(4)
+		CONDITION(5)
+		CONDITION(6)
+		CONDITION(8)
+		CONDITION(16)
+
+#undef CONDITION
+
+		throw std::invalid_argument("invalid capacity " + std::to_string(nBlocks));
 	}
 
 	static BlockArray *createBlockArrayCapacity(unsigned short capacity) {
@@ -134,14 +156,22 @@ public:
 		}
 	}
 
+	void replace(unsigned short offset, Block val) {
+		blockArray->replace(offset, val);
+	}
+
+	void replaceAll(Block oldVal, Block newVal) {
+		blockArray->replaceAll(oldVal, newVal);
+	}
+
 	// Repacks the block array to the smallest format possible with the number of unique blocks found
 	void collectGarbage(bool forceCollect) {
 		if (forceCollect || blockArray->needsGarbageCollection()) {
-			unsigned short count = blockArray->countUniqueBlocks();
+			auto newBitsPerBlock = getMinBitsPerBlock(blockArray->countUniqueBlocks());
 
 			//don't realloc unless the number of unique blocks is different to the palette size
-			if (count != blockArray->getPaletteSize()) {
-				BlockArray *newArray = createBlockArrayCapacity(count);
+			if (newBitsPerBlock != blockArray->getBitsPerBlock()) {
+				BlockArray *newArray = createBlockArray(newBitsPerBlock);
 				assert(newArray != nullptr);
 				newArray->convertFrom(*blockArray);
 				delete blockArray;
@@ -154,3 +184,5 @@ public:
 		}
 	}
 };
+
+#endif
