@@ -28,14 +28,6 @@ extern zend_module_entry mcpe_paletted_block_array_module_entry;
 
 #define PHP_MCPE_PALETTED_BLOCK_ARRAY_VERSION "0.1.0"
 
-#ifdef PHP_WIN32
-#	define PHP_MCPE_PALETTED_BLOCK_ARRAY_API __declspec(dllexport)
-#elif defined(__GNUC__) && __GNUC__ >= 4
-#	define PHP_MCPE_PALETTED_BLOCK_ARRAY_API __attribute__ ((visibility("default")))
-#else
-#	define PHP_MCPE_PALETTED_BLOCK_ARRAY_API
-#endif
-
 #ifdef ZTS
 #include "TSRM.h"
 #endif
