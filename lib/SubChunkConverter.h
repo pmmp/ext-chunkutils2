@@ -1,4 +1,3 @@
-#pragma once
 #ifndef HAVE_SUBCHUNK_CONVERTER_H
 #define HAVE_SUBCHUNK_CONVERTER_H
 

@@ -44,21 +44,6 @@ extern zend_module_entry mcpe_paletted_block_array_module_entry;
 ZEND_TSRMLS_CACHE_EXTERN()
 #endif
 
-PHP_METHOD(PhpPalettedBlockArray, __construct);
-PHP_METHOD(PhpPalettedBlockArray, fromData);
-PHP_METHOD(PhpPalettedBlockArray, getWordArray);
-PHP_METHOD(PhpPalettedBlockArray, getPalette);
-PHP_METHOD(PhpPalettedBlockArray, getMaxPaletteSize);
-PHP_METHOD(PhpPalettedBlockArray, getBitsPerBlock);
-PHP_METHOD(PhpPalettedBlockArray, get);
-PHP_METHOD(PhpPalettedBlockArray, set);
-PHP_METHOD(PhpPalettedBlockArray, collectGarbage);
-PHP_METHOD(PhpPalettedBlockArray, replace);
-PHP_METHOD(PhpPalettedBlockArray, replaceAll);
-
-PHP_METHOD(PhpSubChunkConverter, convertSubChunkXZY);
-PHP_METHOD(PhpSubChunkConverter, convertSubChunkYZX);
-PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn);
 
 #endif	/* PHP_MCPE_PALETTED_BLOCK_ARRAY_H */
 
