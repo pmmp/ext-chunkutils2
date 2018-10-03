@@ -49,26 +49,6 @@ private:
 #undef SWITCH_CASE
 	}
 
-	static uint8_t getMinBitsPerBlock(unsigned short nBlocks) {
-#define CONDITION(i) \
-		if (nBlocks <= PalettedBlockArray<i, Block, Word>::MAX_PALETTE_SIZE) { \
-			return i; \
-		}
-
-		CONDITION(1)
-		CONDITION(2)
-		CONDITION(3)
-		CONDITION(4)
-		CONDITION(5)
-		CONDITION(6)
-		CONDITION(8)
-		CONDITION(16)
-
-#undef CONDITION
-
-		throw std::invalid_argument("invalid capacity " + std::to_string(nBlocks));
-	}
-
 	static BlockArray *createBlockArrayCapacity(unsigned short capacity) {
 #define CONDITION(i) \
 		if (capacity <= PalettedBlockArray<i, Block, Word>::MAX_PALETTE_SIZE) { \
@@ -92,6 +72,26 @@ private:
 	BlockArray *blockArray = nullptr;
 
 public:
+	static uint8_t getMinBitsPerBlock(unsigned short nBlocks) {
+#define CONDITION(i) \
+		if (nBlocks <= PalettedBlockArray<i, Block, Word>::MAX_PALETTE_SIZE) { \
+			return i; \
+		}
+
+		CONDITION(1)
+		CONDITION(2)
+		CONDITION(3)
+		CONDITION(4)
+		CONDITION(5)
+		CONDITION(6)
+		CONDITION(8)
+		CONDITION(16)
+
+#undef CONDITION
+
+		throw std::invalid_argument("invalid capacity " + std::to_string(nBlocks));
+	}
+
 	BlockArrayContainer(uint8_t bitsPerBlock) {
 		blockArray = createBlockArray(bitsPerBlock);
 		if (blockArray == nullptr) {
