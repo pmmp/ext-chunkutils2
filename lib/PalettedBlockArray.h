@@ -46,7 +46,7 @@ public:
 	virtual void replace(unsigned short offset, Block val) = 0;
 	virtual void replaceAll(Block from, Block to) = 0;
 
-	virtual bool convertFrom(IPalettedBlockArray<Block, Word> &otherArray) = 0;
+	virtual void convertFrom(IPalettedBlockArray<Block, Word> &otherArray) = 0;
 };
 
 template <uint8_t BITS_PER_BLOCK, typename Block, typename Word>
@@ -202,18 +202,16 @@ public:
 		}
 	}
 
-	bool convertFrom(IPalettedBlockArray<Block, Word> &otherArray) {
+	void convertFrom(IPalettedBlockArray<Block, Word> &otherArray) {
 		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
 			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
 				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
 					if (!set(x, y, z, otherArray.get(x, y, z))) {
-						return false;
+						throw std::range_error("out of palette space");
 					}
 				}
 			}
 		}
-
-		return true;
 	}
 };
 
