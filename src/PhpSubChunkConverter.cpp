@@ -59,7 +59,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
 	zend_string *metaArray;
 	zend_long yOffset;
 
-	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2)
+	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 3, 3)
 		Z_PARAM_STR(idArray)
 		Z_PARAM_STR(metaArray)
 		Z_PARAM_LONG(yOffset)
