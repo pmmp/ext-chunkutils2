@@ -44,8 +44,7 @@ BlockArrayContainer<> *convertSubChunkXZY(uint8_t * byteArray, uint8_t * nibbleA
 	)
 }
 
-static inline uint8_t *rotateByteArray(uint8_t *byteArray) {
-	auto result = new uint8_t[4096];
+static inline void rotateByteArray(uint8_t *byteArray, uint8_t (&result)[4096]) {
 	for (auto y = 0; y < 16; ++y) {
 		for (auto z = 0; z < 16; ++z) {
 			for (auto x = 0; x < 16; ++x) {
@@ -53,12 +52,9 @@ static inline uint8_t *rotateByteArray(uint8_t *byteArray) {
 			}
 		}
 	}
-	return result;
 }
 
-static inline uint8_t *rotateNibbleArray(uint8_t *nibbleArray) {
-	auto result = new uint8_t[2048];
-
+static inline void rotateNibbleArray(uint8_t *nibbleArray, uint8_t (&result)[2048]) {
 	auto i = 0;
 	for (auto x = 0; x < 8; x++) {
 		for (auto z = 0; z < 16; z++) {
@@ -74,18 +70,14 @@ static inline uint8_t *rotateNibbleArray(uint8_t *nibbleArray) {
 		}
 		i += 128;
 	}
-
-	return result;
 }
 
 BlockArrayContainer<> *convertSubChunkYZX(uint8_t * byteArray, uint8_t * nibbleArray) {
-	auto rotatedByteArray = rotateByteArray(byteArray);
-	auto rotatedNibbleArray = rotateNibbleArray(nibbleArray);
-	auto result = convertSubChunkXZY(rotatedByteArray, rotatedNibbleArray);
-
-	delete rotatedByteArray;
-	delete rotatedNibbleArray;
-	return result;
+	uint8_t rotatedByteArray[4096];
+	uint8_t rotatedNibbleArray[2048];
+	rotateByteArray(byteArray, rotatedByteArray);
+	rotateNibbleArray(nibbleArray, rotatedNibbleArray);
+	return convertSubChunkXZY(rotatedByteArray, rotatedNibbleArray);
 }
 
 BlockArrayContainer<> *convertSubChunkFromLegacyColumn(uint8_t * byteArray, uint8_t * nibbleArray, uint8_t yOffset) {
