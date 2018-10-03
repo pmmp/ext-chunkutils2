@@ -64,8 +64,8 @@ static inline uint8_t *rotateNibbleArray(uint8_t *nibbleArray) {
 		for (auto z = 0; z < 16; z++) {
 			auto zx = ((z << 3) | x);
 			for (auto y = 0; y < 8; y++) {
-				auto byte1 = nibbleArray[(y << 8) | zx];
-				auto byte2 = nibbleArray[(y << 8) | zx | 0x80];
+				uint8_t byte1 = nibbleArray[(y << 8) | zx];
+				uint8_t byte2 = nibbleArray[(y << 8) | zx | 0x80];
 
 				result[i] = ((byte2 << 4) | (byte1 & 0x0f));
 				result[i | 0x80] = ((byte1 >> 4) | (byte2 & 0xf0));
