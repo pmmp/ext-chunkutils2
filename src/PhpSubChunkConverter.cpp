@@ -20,7 +20,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkXZY) {
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2)
 		Z_PARAM_STR(idArray)
 		Z_PARAM_STR(metaArray)
-		ZEND_PARSE_PARAMETERS_END();
+	ZEND_PARSE_PARAMETERS_END();
 
 
 	object_init_ex(return_value, paletted_block_array_entry);
@@ -63,7 +63,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
 		Z_PARAM_STR(idArray)
 		Z_PARAM_STR(metaArray)
 		Z_PARAM_LONG(yOffset)
-		ZEND_PARSE_PARAMETERS_END();
+	ZEND_PARSE_PARAMETERS_END();
 
 
 	object_init_ex(return_value, paletted_block_array_entry);
