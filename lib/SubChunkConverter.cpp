@@ -1,4 +1,4 @@
-
+#include <new>
 #include "SubChunkConverter.h"
 
 #define LOOP(GET_INDEX) \
@@ -23,7 +23,7 @@
 			} \
 		} \
 	} \
-	BlockArrayContainer<> *result = new BlockArrayContainer<>(BlockArrayContainer<>::getMinBitsPerBlock(unique)); \
+	new(result) BlockArrayContainer<>(BlockArrayContainer<>::getMinBitsPerBlock(unique)); \
 	for (auto x = 0; x < 16; ++x) { \
 		for (auto z = 0; z < 16; ++z) { \
 			for (auto y = 0; y < 8; ++y) { \
@@ -34,9 +34,8 @@
 			} \
 		} \
 	} \
-	return result;
 
-BlockArrayContainer<> *convertSubChunkXZY(uint8_t * byteArray, uint8_t * nibbleArray) {
+void convertSubChunkXZY(BlockArrayContainer<> * result, uint8_t * byteArray, uint8_t * nibbleArray) {
 	LOOP(
 		id1Idx = (x << 8) | (z << 4) | (y << 1);
 		id2Idx = id1Idx | 1;
@@ -72,15 +71,15 @@ static inline void rotateNibbleArray(uint8_t *nibbleArray, uint8_t (&result)[204
 	}
 }
 
-BlockArrayContainer<> *convertSubChunkYZX(uint8_t * byteArray, uint8_t * nibbleArray) {
+void convertSubChunkYZX(BlockArrayContainer<> * result, uint8_t * byteArray, uint8_t * nibbleArray) {
 	uint8_t rotatedByteArray[4096];
 	uint8_t rotatedNibbleArray[2048];
 	rotateByteArray(byteArray, rotatedByteArray);
 	rotateNibbleArray(nibbleArray, rotatedNibbleArray);
-	return convertSubChunkXZY(rotatedByteArray, rotatedNibbleArray);
+	convertSubChunkXZY(result, rotatedByteArray, rotatedNibbleArray);
 }
 
-BlockArrayContainer<> *convertSubChunkFromLegacyColumn(uint8_t * byteArray, uint8_t * nibbleArray, uint8_t yOffset) {
+void convertSubChunkFromLegacyColumn(BlockArrayContainer<> * result, uint8_t * byteArray, uint8_t * nibbleArray, uint8_t yOffset) {
 	LOOP(
 		id1Idx = (x << 11) | (z << 7) | (yOffset << 4) | (y << 1);
 		id2Idx = id1Idx | 1;

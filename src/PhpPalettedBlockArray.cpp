@@ -1,3 +1,4 @@
+#include <new>
 
 #include "lib/BlockArrayContainer.h"
 #include "ZendUtil.h"
@@ -32,7 +33,7 @@ zend_object* paletted_block_array_new(zend_class_entry *class_type) {
 
 void paletted_block_array_free(zend_object *obj) {
 	paletted_block_array_obj *object = fetch_from_zend_object<paletted_block_array_obj>(obj);
-	delete object->container;
+	object->container.~BlockArrayContainer();
 
 	//call the standard free handler
 	zend_object_std_dtor(&object->std);
@@ -55,7 +56,7 @@ PHP_METHOD(PhpPalettedBlockArray, __construct) {
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
 	try {
-		intern->container = new BlockArrayContainer<>((uint8_t)bitsPerBlock);
+		new(&intern->container) BlockArrayContainer<>((uint8_t)bitsPerBlock);
 	}
 	catch (std::exception& e) {
 		zend_throw_exception_ex(spl_ce_RuntimeException, 0, e.what());
@@ -107,7 +108,7 @@ PHP_METHOD(PhpPalettedBlockArray, fromData) {
 	}
 
 	try {
-		intern->container = new BlockArrayContainer<>((uint8_t)bitsPerBlock, wordArray, palette);
+		new(&intern->container) BlockArrayContainer<>((uint8_t)bitsPerBlock, wordArray, palette);
 	}
 	catch (std::exception& e) {
 		zval_ptr_dtor(return_value);
@@ -125,7 +126,7 @@ PHP_METHOD(PhpPalettedBlockArray, getWordArray) {
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
 
 	unsigned short wordCount;
-	const Word *words = intern->container->getWordArray(wordCount);
+	const Word *words = intern->container.getWordArray(wordCount);
 
 	RETURN_STRINGL((const char *)words, wordCount * sizeof(Word));
 }
@@ -140,7 +141,7 @@ PHP_METHOD(PhpPalettedBlockArray, getPalette) {
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
 
 	unsigned short paletteSize;
-	const Block *palette = intern->container->getPalette(paletteSize);
+	const Block *palette = intern->container.getPalette(paletteSize);
 
 	array_init_size(return_value, paletteSize);
 	for (unsigned short i = 0; i < paletteSize; ++i) {
@@ -156,7 +157,7 @@ PHP_METHOD(PhpPalettedBlockArray, getMaxPaletteSize) {
 	zend_parse_parameters_none_throw();
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
-	RETURN_LONG(intern->container->getMaxPaletteSize());
+	RETURN_LONG(intern->container.getMaxPaletteSize());
 }
 
 
@@ -167,7 +168,7 @@ PHP_METHOD(PhpPalettedBlockArray, getBitsPerBlock) {
 	zend_parse_parameters_none_throw();
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
-	RETURN_LONG(intern->container->getBitsPerBlock());
+	RETURN_LONG(intern->container.getBitsPerBlock());
 }
 
 
@@ -187,7 +188,7 @@ PHP_METHOD(PhpPalettedBlockArray, get) {
 	ZEND_PARSE_PARAMETERS_END();
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
-	RETURN_LONG(intern->container->get(x, y, z))
+	RETURN_LONG(intern->container.get(x, y, z))
 }
 
 
@@ -209,7 +210,7 @@ PHP_METHOD(PhpPalettedBlockArray, set) {
 	ZEND_PARSE_PARAMETERS_END();
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
-	intern->container->set(x, y, z, val);
+	intern->container.set(x, y, z, val);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray_replace, 0, 0, 2)
@@ -226,7 +227,7 @@ PHP_METHOD(PhpPalettedBlockArray, replace) {
 	ZEND_PARSE_PARAMETERS_END();
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
-	intern->container->replace(offset, val);
+	intern->container.replace(offset, val);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray_replaceAll, 0, 0, 2)
@@ -243,7 +244,7 @@ PHP_METHOD(PhpPalettedBlockArray, replaceAll) {
 	ZEND_PARSE_PARAMETERS_END();
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
-	intern->container->replaceAll(oldVal, newVal);
+	intern->container.replaceAll(oldVal, newVal);
 }
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray_collectGarbage, 0, 0, 0)
@@ -259,7 +260,7 @@ PHP_METHOD(PhpPalettedBlockArray, collectGarbage) {
 	ZEND_PARSE_PARAMETERS_END();
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
-	intern->container->collectGarbage(force ? true : false);
+	intern->container.collectGarbage(force ? true : false);
 }
 
 zend_function_entry paletted_block_array_class_methods[] = {

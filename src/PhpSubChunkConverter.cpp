@@ -26,7 +26,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkXZY) {
 	object_init_ex(return_value, paletted_block_array_entry);
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
 	//TODO: needs length checks
-	intern->container = convertSubChunkXZY((uint8_t*)idArray->val, (uint8_t*)metaArray->val);
+	convertSubChunkXZY(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val);
 }
 
 //TODO: repetetive, clean it up :(
@@ -44,7 +44,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkYZX) {
 	object_init_ex(return_value, paletted_block_array_entry);
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
 	//TODO: needs length checks
-	intern->container = convertSubChunkYZX((uint8_t*)idArray->val, (uint8_t*)metaArray->val);
+	convertSubChunkYZX(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val);
 }
 
 
@@ -70,7 +70,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
 	//TODO: needs length checks
 	//TODO: check for valid Y offset
-	intern->container = convertSubChunkFromLegacyColumn((uint8_t*)idArray->val, (uint8_t*)metaArray->val, (uint8_t)yOffset);
+	convertSubChunkFromLegacyColumn(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val, (uint8_t)yOffset);
 }
 
 zend_function_entry subchunk_converter_class_methods[] = {

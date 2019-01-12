@@ -8,7 +8,7 @@ extern "C" {
 }
 
 typedef struct {
-	BlockArrayContainer<> *container;
+	BlockArrayContainer<> container;
 	zend_object std;
 } paletted_block_array_obj;
 

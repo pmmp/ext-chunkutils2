@@ -3,8 +3,8 @@
 
 #include "BlockArrayContainer.h"
 
-BlockArrayContainer<> *convertSubChunkXZY(uint8_t * byteArray, uint8_t * nibbleArray);
-BlockArrayContainer<> *convertSubChunkYZX(uint8_t * byteArray, uint8_t * nibbleArray);
-BlockArrayContainer<> *convertSubChunkFromLegacyColumn(uint8_t * byteArray, uint8_t * nibbleArray, uint8_t yOffset);
+void convertSubChunkXZY(BlockArrayContainer<> * where, uint8_t * byteArray, uint8_t * nibbleArray);
+void convertSubChunkYZX(BlockArrayContainer<> * where, uint8_t * byteArray, uint8_t * nibbleArray);
+void convertSubChunkFromLegacyColumn(BlockArrayContainer<> * where, uint8_t * byteArray, uint8_t * nibbleArray, uint8_t yOffset);
 
 #endif
