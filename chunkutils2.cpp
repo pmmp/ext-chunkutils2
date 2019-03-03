@@ -28,12 +28,12 @@
 extern "C" {
 #include "php.h"
 #include "ext/standard/info.h"
-#include "php_mcpe_paletted_block_array.h" //this one has to be C always, so the engine can understand it
+#include "php_chunkutils2.h" //this one has to be C always, so the engine can understand it
 }
 
 /* {{{ PHP_MINIT_FUNCTION
  */
-PHP_MINIT_FUNCTION(mcpe_paletted_block_array)
+PHP_MINIT_FUNCTION(chunkutils2)
 {
 	register_paletted_block_array_class();
 	register_sub_chunk_converter_class();
@@ -43,36 +43,36 @@ PHP_MINIT_FUNCTION(mcpe_paletted_block_array)
 
 /* {{{ PHP_MINFO_FUNCTION
  */
-PHP_MINFO_FUNCTION(mcpe_paletted_block_array)
+PHP_MINFO_FUNCTION(chunkutils2)
 {
 	php_info_print_table_start();
-	php_info_print_table_header(2, "mcpe_paletted_block_array support", "enabled");
+	php_info_print_table_header(2, "chunkutils2 support", "enabled");
 	php_info_print_table_end();
 }
 /* }}} */
 
-/* {{{ mcpe_paletted_block_array_module_entry
+/* {{{ chunkutils2_module_entry
  */
-zend_module_entry mcpe_paletted_block_array_module_entry = {
+zend_module_entry chunkutils2_module_entry = {
 	STANDARD_MODULE_HEADER,
-	"mcpe_paletted_block_array",
+	"chunkutils2",
 	NULL,
-	PHP_MINIT(mcpe_paletted_block_array),
+	PHP_MINIT(chunkutils2),
 	NULL, /* MSHUTDOWN */
 	NULL, /* RINIT */
 	NULL, /* RSHUTDOWN */
-	PHP_MINFO(mcpe_paletted_block_array),
-	PHP_MCPE_PALETTED_BLOCK_ARRAY_VERSION,
+	PHP_MINFO(chunkutils2),
+	PHP_CHUNKUTILS2_VERSION,
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
 
-#ifdef COMPILE_DL_MCPE_PALETTED_BLOCK_ARRAY
+#ifdef COMPILE_DL_CHUNKUTILS2
 extern "C" {
 #ifdef ZTS
 ZEND_TSRMLS_CACHE_DEFINE()
 #endif
-ZEND_GET_MODULE(mcpe_paletted_block_array)
+ZEND_GET_MODULE(chunkutils2)
 }
 #endif
 

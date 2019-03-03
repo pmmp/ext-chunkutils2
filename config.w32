@@ -1,20 +1,20 @@
 // $Id$
 // vim:ft=javascript
 
-ARG_ENABLE("mcpe-paletted-block-array", "Enable PocketMine chunk block-arrays extension", "no");
+ARG_ENABLE("chunkutils2", "Enable PocketMine ChunkUtils2 extension", "no");
 
-if (PHP_MCPE_PALETTED_BLOCK_ARRAY != "no") {
-	EXTENSION("mcpe_paletted_block_array", "mcpe_paletted_block_array.cpp", PHP_MCPE_PALETTED_BLOCK_ARRAY_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 /I" + configure_module_dirname);
-	ADD_FLAG("CFLAGS_MCPE_PALETTED_BLOCK_ARRAY", "/EHsc");
+if (PHP_CHUNKUTILS2 != "no") {
+	EXTENSION("chunkutils2", "chunkutils2.cpp", PHP_CHUNKUTILS2_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 /I" + configure_module_dirname);
+	ADD_FLAG("CFLAGS_CHUNKUTILS2", "/EHsc");
 	ADD_SOURCES(
 		configure_module_dirname + "/src",
 		"PhpPalettedBlockArray.cpp PhpSubChunkConverter.cpp",
-		"mcpe_paletted_block_array"
+		"chunkutils2"
 	);
 	ADD_SOURCES(
 		configure_module_dirname + "/lib",
 		"SubChunkConverter.cpp",
-		"mcpe_paletted_block_array"
+		"chunkutils2"
 	);
 }
 
