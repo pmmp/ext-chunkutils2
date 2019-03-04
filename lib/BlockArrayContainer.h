@@ -74,6 +74,24 @@ private:
 	BlockArray *blockArray = nullptr;
 
 public:
+	static unsigned int getExpectedPayloadSize(uint8_t bitsPerBlock) {
+#define SWITCH_CASE(i) case i: return PalettedBlockArray<i, Block>::PAYLOAD_SIZE;
+		switch (bitsPerBlock) {
+			SWITCH_CASE(1)
+			SWITCH_CASE(2)
+			SWITCH_CASE(3)
+			SWITCH_CASE(4)
+			SWITCH_CASE(5)
+			SWITCH_CASE(6)
+			SWITCH_CASE(8)
+			SWITCH_CASE(16)
+		default:
+			throw std::invalid_argument("invalid bits-per-block: " + std::to_string(bitsPerBlock));
+		}
+
+#undef SWITCH_CASE
+	}
+
 	BlockArrayContainer(Block block) {
 		blockArray = new PalettedBlockArray<1, Block>(block);
 	}

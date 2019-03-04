@@ -272,6 +272,32 @@ PHP_METHOD(PhpPalettedBlockArray, collectGarbage) {
 	intern->container.collectGarbage(force ? true : false);
 }
 
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_PalettedBlockArray_getExpectedWordArraySize, 0, 1, IS_LONG, 0)
+	ZEND_ARG_TYPE_INFO(0, bitsPerBlock, IS_LONG, 0)
+ZEND_END_ARG_INFO();
+
+PHP_METHOD(PhpPalettedBlockArray, getExpectedWordArraySize) {
+	zend_long bitsPerBlock;
+
+	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
+		Z_PARAM_LONG(bitsPerBlock)
+	ZEND_PARSE_PARAMETERS_END();
+
+	uint8_t casted = (uint8_t)bitsPerBlock;
+	zend_long castedBack = (zend_long)casted;
+	if (bitsPerBlock != castedBack) {
+		zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "invalid bits-per-block: %zd", bitsPerBlock);
+		return;
+	}
+
+	try {
+		RETURN_LONG((zend_long)NormalBlockArrayContainer::getExpectedPayloadSize(casted));
+	}
+	catch (std::invalid_argument &e) {
+		zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, e.what());
+	}
+}
+
 zend_function_entry paletted_block_array_class_methods[] = {
 	PHP_ME(PhpPalettedBlockArray, __construct, arginfo_PalettedBlockArray___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	PHP_ME(PhpPalettedBlockArray, fromData, arginfo_PalettedBlockArray_fromData, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
@@ -284,6 +310,7 @@ zend_function_entry paletted_block_array_class_methods[] = {
 	PHP_ME(PhpPalettedBlockArray, replace, arginfo_PalettedBlockArray_replace, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, replaceAll, arginfo_PalettedBlockArray_replaceAll, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, collectGarbage, arginfo_PalettedBlockArray_collectGarbage, ZEND_ACC_PUBLIC)
+	PHP_ME(PhpPalettedBlockArray, getExpectedWordArraySize, arginfo_PalettedBlockArray_getExpectedWordArraySize, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_FE_END
 };
 

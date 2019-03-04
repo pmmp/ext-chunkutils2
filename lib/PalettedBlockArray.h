@@ -60,6 +60,7 @@ public:
 	static const unsigned char BLOCKS_PER_WORD = sizeof(Word) * CHAR_BIT / BITS_PER_BLOCK;
 	static const Word BLOCK_MASK = (1 << BITS_PER_BLOCK) - 1;
 	static const unsigned short WORD_COUNT = Base::ARRAY_CAPACITY / BLOCKS_PER_WORD + (Base::ARRAY_CAPACITY % BLOCKS_PER_WORD ? 1 : 0);
+	static const unsigned int PAYLOAD_SIZE = WORD_COUNT * sizeof(Word);
 	static const unsigned short MAX_PALETTE_SIZE = (1 << BITS_PER_BLOCK) < Base::ARRAY_CAPACITY ? (1 << BITS_PER_BLOCK) : Base::ARRAY_CAPACITY;
 
 private:
