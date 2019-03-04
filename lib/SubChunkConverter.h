@@ -44,8 +44,8 @@ template<typename Block>
 void convertSubChunkXZY(BlockArrayContainer<Block> * result, uint8_t * idArray, uint8_t * metaArray, std::function<Block(uint8_t id, uint8_t meta)> mapper) {
 	LOOP(
 		id1Idx = (x << 8) | (z << 4) | (y << 1);
-	id2Idx = id1Idx | 1;
-	metaIdx = id1Idx >> 1;
+		id2Idx = id1Idx | 1;
+		metaIdx = id1Idx >> 1;
 	)
 }
 
@@ -90,8 +90,8 @@ template<typename Block>
 void convertSubChunkFromLegacyColumn(BlockArrayContainer<Block> * result, uint8_t * idArray, uint8_t * metaArray, uint8_t yOffset, std::function<Block(uint8_t id, uint8_t meta)> mapper) {
 	LOOP(
 		id1Idx = (x << 11) | (z << 7) | (yOffset << 4) | (y << 1);
-	id2Idx = id1Idx | 1;
-	metaIdx = id1Idx >> 1;
+		id2Idx = id1Idx | 1;
+		metaIdx = id1Idx >> 1;
 	)
 }
 
