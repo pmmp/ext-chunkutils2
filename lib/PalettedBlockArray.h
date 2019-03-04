@@ -55,6 +55,7 @@ template <uint8_t BITS_PER_BLOCK, typename Block>
 class PalettedBlockArray : public IPalettedBlockArray<Block> {
 private:
 	using Base = IPalettedBlockArray<Block>;
+	using Word = typename Base::Word;
 public:
 	static const unsigned char BLOCKS_PER_WORD = sizeof(Word) * CHAR_BIT / BITS_PER_BLOCK;
 	static const Word BLOCK_MASK = (1 << BITS_PER_BLOCK) - 1;
