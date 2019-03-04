@@ -36,6 +36,15 @@ void paletted_block_array_free(zend_object *obj) {
 	zend_object_std_dtor(&object->std);
 }
 
+static inline bool checkPaletteEntrySize(zend_long v) {
+	Block casted = (Block)v;
+	zend_long castedBack = (zend_long)casted;
+	if (castedBack != v) {
+		zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "value %zd is too large to be used as a palette entry", v);
+		return false;
+	}
+	return true;
+}
 
 /* PHP-land PalettedBlockArray methods */
 
@@ -49,6 +58,10 @@ PHP_METHOD(PhpPalettedBlockArray, __construct) {
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
 		Z_PARAM_LONG(fillEntry)
 	ZEND_PARSE_PARAMETERS_END();
+
+	if (!checkPaletteEntrySize(fillEntry)) {
+		return;
+	}
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
 	try {
@@ -94,6 +107,11 @@ PHP_METHOD(PhpPalettedBlockArray, fromData) {
 		current = zend_hash_get_current_data_ex(paletteHt, &pos);
 		zend_hash_move_forward_ex(paletteHt, &pos)
 		) {
+
+		if (!checkPaletteEntrySize(Z_LVAL_P(current))) {
+			zval_ptr_dtor(return_value);
+			return;
+		}
 		b = (Block)Z_LVAL_P(current);
 		palette.push_back(b);
 	}
