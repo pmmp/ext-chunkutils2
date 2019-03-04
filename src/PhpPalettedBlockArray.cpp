@@ -14,9 +14,6 @@ extern "C" {
 zend_class_entry *paletted_block_array_entry;
 zend_object_handlers paletted_block_array_handlers;
 
-typedef uint32_t Word;
-typedef unsigned int Block;
-
 /* internal object handlers */
 
 zend_object* paletted_block_array_new(zend_class_entry *class_type) {
@@ -42,21 +39,20 @@ void paletted_block_array_free(zend_object *obj) {
 
 /* PHP-land PalettedBlockArray methods */
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray___construct, 0, 0, 0)
-	ZEND_ARG_TYPE_INFO(0, bitsPerBlock, IS_LONG, 0)
+ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray___construct, 0, 0, 1)
+	ZEND_ARG_TYPE_INFO(0, fillEntry, IS_LONG, 0)
 ZEND_END_ARG_INFO()
 
 PHP_METHOD(PhpPalettedBlockArray, __construct) {
-	zend_long bitsPerBlock = 1;
+	zend_long fillEntry;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 0, 1)
-		Z_PARAM_OPTIONAL
-		Z_PARAM_LONG(bitsPerBlock)
+		Z_PARAM_LONG(fillEntry)
 	ZEND_PARSE_PARAMETERS_END();
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
 	try {
-		new(&intern->container) BlockArrayContainer<>((uint8_t)bitsPerBlock);
+		new(&intern->container) NormalBlockArrayContainer((Block)fillEntry);
 	}
 	catch (std::exception& e) {
 		zend_throw_exception_ex(spl_ce_RuntimeException, 0, e.what());
@@ -81,15 +77,10 @@ PHP_METHOD(PhpPalettedBlockArray, fromData) {
 		Z_PARAM_ARRAY(paletteZarray)
 	ZEND_PARSE_PARAMETERS_END();
 
-	if ((ZSTR_LEN(wordArrayZstr) % sizeof(Word)) != 0) {
-		zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "word array length should be a multiple of %d, got a length of %d", sizeof(Word), ZSTR_LEN(wordArrayZstr));
-		return;
-	}
-
 	object_init_ex(return_value, paletted_block_array_entry);
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
 
-	std::vector<Word> wordArray((Word *)ZSTR_VAL(wordArrayZstr), (Word *)(ZSTR_VAL(wordArrayZstr) + ZSTR_LEN(wordArrayZstr)));
+	std::vector<char> wordArray(ZSTR_VAL(wordArrayZstr), (ZSTR_VAL(wordArrayZstr) + ZSTR_LEN(wordArrayZstr)));
 	std::vector<Block> palette;
 
 	HashTable *paletteHt = Z_ARRVAL_P(paletteZarray);
@@ -108,7 +99,7 @@ PHP_METHOD(PhpPalettedBlockArray, fromData) {
 	}
 
 	try {
-		new(&intern->container) BlockArrayContainer<>((uint8_t)bitsPerBlock, wordArray, palette);
+		new(&intern->container) NormalBlockArrayContainer((uint8_t)bitsPerBlock, wordArray, palette);
 	}
 	catch (std::exception& e) {
 		zval_ptr_dtor(return_value);
@@ -125,10 +116,10 @@ PHP_METHOD(PhpPalettedBlockArray, getWordArray) {
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
 
-	unsigned short wordCount;
-	const Word *words = intern->container.getWordArray(wordCount);
+	unsigned int length;
+	const char *words = intern->container.getWordArray(length);
 
-	RETURN_STRINGL((const char *)words, wordCount * sizeof(Word));
+	RETURN_STRINGL(words, length);
 }
 
 

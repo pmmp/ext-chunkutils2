@@ -8,13 +8,13 @@
 
 #include "PalettedBlockArray.h"
 
-template<typename Block = unsigned int, typename Word = uint32_t>
+template<typename Block>
 class BlockArrayContainer {
 private:
-	typedef IPalettedBlockArray<Block, Word> BlockArray;
+	typedef IPalettedBlockArray<Block> BlockArray;
 
-	static BlockArray *createBlockArray(uint8_t bitsPerBlock) {
-#define SWITCH_CASE(i) case i: return new PalettedBlockArray<i, Block, Word>;
+	static BlockArray *blockArrayFromData(uint8_t bitsPerBlock, std::vector<char> &wordArray, std::vector<Block> &paletteEntries) {
+#define SWITCH_CASE(i) case i: return new PalettedBlockArray<i, Block>(wordArray, paletteEntries);
 		switch (bitsPerBlock) {
 			SWITCH_CASE(1)
 			SWITCH_CASE(2)
@@ -25,34 +25,16 @@ private:
 			SWITCH_CASE(8)
 			SWITCH_CASE(16)
 		default:
-			return nullptr;
+			throw std::runtime_error("invalid bits-per-block: " + std::to_string(bitsPerBlock));
 		}
 
 #undef SWITCH_CASE
 	}
 
-	static BlockArray *createBlockArray(uint8_t bitsPerBlock, std::vector<Word> &wordArray, std::vector<Block> &paletteEntries) {
-#define SWITCH_CASE(i) case i: return new PalettedBlockArray<i, Block, Word>(wordArray, paletteEntries);
-		switch (bitsPerBlock) {
-			SWITCH_CASE(1)
-			SWITCH_CASE(2)
-			SWITCH_CASE(3)
-			SWITCH_CASE(4)
-			SWITCH_CASE(5)
-			SWITCH_CASE(6)
-			SWITCH_CASE(8)
-			SWITCH_CASE(16)
-		default:
-			return nullptr;
-		}
-
-#undef SWITCH_CASE
-	}
-
-	static BlockArray *createBlockArrayCapacity(unsigned short capacity) {
+	static BlockArray *blockArrayFromCapacity(unsigned short capacity) {
 #define CONDITION(i) \
-		if (capacity <= PalettedBlockArray<i, Block, Word>::MAX_PALETTE_SIZE) { \
-			return new PalettedBlockArray<i, Block, Word>; \
+		if (capacity <= PalettedBlockArray<i, Block>::MAX_PALETTE_SIZE) { \
+			return new PalettedBlockArray<i, Block>; \
 		}
 
 		CONDITION(1)
@@ -64,17 +46,14 @@ private:
 		CONDITION(8)
 		CONDITION(16)
 
-		return nullptr;
+		throw std::invalid_argument("invalid capacity specified: " + std::to_string(capacity));
 
 #undef CONDITION
 	}
 
-	BlockArray *blockArray = nullptr;
-
-public:
-	static uint8_t getMinBitsPerBlock(unsigned short nBlocks) {
+	static uint8_t getMinBitsPerBlock(unsigned short capacity) {
 #define CONDITION(i) \
-		if (nBlocks <= PalettedBlockArray<i, Block, Word>::MAX_PALETTE_SIZE) { \
+		if (capacity <= PalettedBlockArray<i, Block>::MAX_PALETTE_SIZE) { \
 			return i; \
 		}
 
@@ -89,33 +68,30 @@ public:
 
 #undef CONDITION
 
-		throw std::invalid_argument("invalid capacity " + std::to_string(nBlocks));
+		throw std::invalid_argument("invalid capacity specified: " + std::to_string(capacity));
 	}
 
-	BlockArrayContainer(uint8_t bitsPerBlock) {
-		blockArray = createBlockArray(bitsPerBlock);
-		if (blockArray == nullptr) {
-			throw std::invalid_argument("invalid bits-per-block specified: " + std::to_string(bitsPerBlock));
-		}
+	BlockArray *blockArray = nullptr;
+
+public:
+	BlockArrayContainer(Block block) {
+		blockArray = new PalettedBlockArray<1, Block>(block);
 	}
 
-	BlockArrayContainer() {
-		BlockArrayContainer(1);
+	BlockArrayContainer(unsigned short capacity) {
+		blockArray = blockArrayFromCapacity(capacity);
 	}
 
-	BlockArrayContainer(uint8_t bitsPerBlock, std::vector<Word> &wordArray, std::vector<Block> &paletteEntries) {
-		blockArray = createBlockArray(bitsPerBlock, wordArray, paletteEntries);
-		if (blockArray == nullptr) {
-			throw std::invalid_argument("invalid bits-per-block specified: " + std::to_string(bitsPerBlock));
-		}
+	BlockArrayContainer(uint8_t bitsPerBlock, std::vector<char> &wordArray, std::vector<Block> &paletteEntries) {
+		blockArray = blockArrayFromData(bitsPerBlock, wordArray, paletteEntries);
 	}
 
 	~BlockArrayContainer() {
 		delete blockArray;
 	}
 
-	const Word *getWordArray(unsigned short &arraySize) const {
-		return blockArray->getWordArray(arraySize);
+	const char *getWordArray(unsigned int &length) const {
+		return blockArray->getWordArray(length);
 	}
 
 	const Block *getPalette(unsigned short &paletteSize) const {
@@ -141,7 +117,7 @@ public:
 				//reached max capacity and less than ARRAY_CAPACITY unique blocks in array
 				//this also automatically handles GC on chunks when there are unused palette entries in an array
 
-				BlockArray *newArray = createBlockArrayCapacity(count + 1);
+				BlockArray *newArray = blockArrayFromCapacity(count + 1);
 
 				newArray->convertFrom(*blockArray);
 				newArray->set(x, y, z, val);
@@ -167,11 +143,10 @@ public:
 	// Repacks the block array to the smallest format possible with the number of unique blocks found
 	void collectGarbage(bool forceCollect) {
 		if (forceCollect || blockArray->needsGarbageCollection()) {
-			auto newBitsPerBlock = getMinBitsPerBlock(blockArray->countUniqueBlocks());
+			auto unique = blockArray->countUniqueBlocks();
 
-			//don't realloc unless the number of unique blocks is different to the palette size
-			if (newBitsPerBlock != blockArray->getBitsPerBlock()) {
-				BlockArray *newArray = createBlockArray(newBitsPerBlock);
+			if (getMinBitsPerBlock(unique) != blockArray->getBitsPerBlock()) {
+				BlockArray *newArray = blockArrayFromCapacity(unique);
 				assert(newArray != nullptr);
 				newArray->convertFrom(*blockArray);
 				delete blockArray;

@@ -3,8 +3,96 @@
 
 #include "BlockArrayContainer.h"
 
-void convertSubChunkXZY(BlockArrayContainer<> * where, uint8_t * byteArray, uint8_t * nibbleArray);
-void convertSubChunkYZX(BlockArrayContainer<> * where, uint8_t * byteArray, uint8_t * nibbleArray);
-void convertSubChunkFromLegacyColumn(BlockArrayContainer<> * where, uint8_t * byteArray, uint8_t * nibbleArray, uint8_t yOffset);
+#include <functional>
+#include <new>
+
+#define LOOP(GET_INDEX) \
+	bool seen[4096] = {}; \
+	unsigned short id1Idx, id2Idx, metaIdx; \
+	unsigned short unique = 0; \
+	for (auto x = 0; x < 16; ++x) { \
+		for (auto z = 0; z < 16; ++z) { \
+			for (auto y = 0; y < 8; ++y) { \
+				GET_INDEX \
+				uint8_t metaByte = metaArray[metaIdx]; \
+				unsigned short id1 = (idArray[id1Idx] << 4) | (metaByte & 0xf); \
+				unsigned short id2 = (idArray[id2Idx] << 4) | ((metaByte >> 4) & 0xf); \
+				if(!seen[id1]){ \
+					seen[id1] = true; \
+					unique++; \
+				} \
+				if(!seen[id2]){ \
+					seen[id2] = true; \
+					unique++; \
+				} \
+			} \
+		} \
+	} \
+	new(result) BlockArrayContainer<Block>(unique); \
+	for (auto x = 0; x < 16; ++x) { \
+		for (auto z = 0; z < 16; ++z) { \
+			for (auto y = 0; y < 8; ++y) { \
+				GET_INDEX \
+				uint8_t metaByte = metaArray[metaIdx]; \
+				result->set(x, y << 1, z, mapper(idArray[id1Idx], (metaByte & 0xf))); \
+				result->set(x, (y << 1) | 1, z, mapper(idArray[id2Idx], ((metaByte >> 4) & 0xf))); \
+			} \
+		} \
+	} \
+
+template<typename Block>
+void convertSubChunkXZY(BlockArrayContainer<Block> * result, uint8_t * idArray, uint8_t * metaArray, std::function<Block(uint8_t id, uint8_t meta)> mapper) {
+	LOOP(
+		id1Idx = (x << 8) | (z << 4) | (y << 1);
+	id2Idx = id1Idx | 1;
+	metaIdx = id1Idx >> 1;
+	)
+}
+
+static inline void rotateByteArray(uint8_t *byteArray, uint8_t(&result)[4096]) {
+	for (auto y = 0; y < 16; ++y) {
+		for (auto z = 0; z < 16; ++z) {
+			for (auto x = 0; x < 16; ++x) {
+				result[(x << 8) | (z << 4) | y] = byteArray[(y << 8) | (z << 4) | x];
+			}
+		}
+	}
+}
+
+static inline void rotateNibbleArray(uint8_t *nibbleArray, uint8_t(&result)[2048]) {
+	auto i = 0;
+	for (auto x = 0; x < 8; x++) {
+		for (auto z = 0; z < 16; z++) {
+			auto zx = ((z << 3) | x);
+			for (auto y = 0; y < 8; y++) {
+				uint8_t byte1 = nibbleArray[(y << 8) | zx];
+				uint8_t byte2 = nibbleArray[(y << 8) | zx | 0x80];
+
+				result[i] = ((byte2 << 4) | (byte1 & 0x0f));
+				result[i | 0x80] = ((byte1 >> 4) | (byte2 & 0xf0));
+				i++;
+			}
+		}
+		i += 128;
+	}
+}
+
+template<typename Block>
+void convertSubChunkYZX(BlockArrayContainer<Block> * result, uint8_t * idArray, uint8_t * metaArray, std::function<Block(uint8_t id, uint8_t meta)> mapper) {
+	uint8_t rotatedByteArray[4096];
+	uint8_t rotatedNibbleArray[2048];
+	rotateByteArray(idArray, rotatedByteArray);
+	rotateNibbleArray(metaArray, rotatedNibbleArray);
+	convertSubChunkXZY<Block>(result, rotatedByteArray, rotatedNibbleArray, mapper);
+}
+
+template<typename Block>
+void convertSubChunkFromLegacyColumn(BlockArrayContainer<Block> * result, uint8_t * idArray, uint8_t * metaArray, uint8_t yOffset, std::function<Block(uint8_t id, uint8_t meta)> mapper) {
+	LOOP(
+		id1Idx = (x << 11) | (z << 7) | (yOffset << 4) | (y << 1);
+	id2Idx = id1Idx | 1;
+	metaIdx = id1Idx >> 1;
+	)
+}
 
 #endif

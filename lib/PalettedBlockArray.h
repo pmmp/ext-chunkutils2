@@ -13,9 +13,11 @@
 #include <string>
 #include <vector>
 
-template<typename Block, typename Word>
+template<typename Block>
 class IPalettedBlockArray {
 protected:
+	typedef uint32_t Word;
+
 	// Whether this block array may have unused entries in its palette. Indicates that garbage collection could reduce the size of the array
 	bool mayNeedGC = false;
 public:
@@ -31,7 +33,7 @@ public:
 		mayNeedGC = false;
 	}
 
-	virtual const Word *getWordArray(unsigned short &arraySize) const = 0;
+	virtual const char *getWordArray(unsigned int &length) const = 0;
 
 	virtual const Block *getPalette(unsigned short &paletteSize) const = 0;
 	virtual unsigned short getPaletteSize() const = 0;
@@ -46,13 +48,13 @@ public:
 	virtual void replace(unsigned short offset, Block val) = 0;
 	virtual void replaceAll(Block from, Block to) = 0;
 
-	virtual void convertFrom(IPalettedBlockArray<Block, Word> &otherArray) = 0;
+	virtual void convertFrom(IPalettedBlockArray<Block> &otherArray) = 0;
 };
 
-template <uint8_t BITS_PER_BLOCK, typename Block, typename Word>
-class PalettedBlockArray : public IPalettedBlockArray<Block, Word> {
+template <uint8_t BITS_PER_BLOCK, typename Block>
+class PalettedBlockArray : public IPalettedBlockArray<Block> {
 private:
-	using Base = IPalettedBlockArray<Block, Word>;
+	using Base = IPalettedBlockArray<Block>;
 public:
 	static const unsigned char BLOCKS_PER_WORD = sizeof(Word) * CHAR_BIT / BITS_PER_BLOCK;
 	static const Word BLOCK_MASK = (1 << BITS_PER_BLOCK) - 1;
@@ -90,12 +92,17 @@ private:
 public:
 
 	PalettedBlockArray() {
-		memset(words.data(), 0, sizeof(words));
+
 	}
 
-	PalettedBlockArray(std::vector<Word> &wordArray, std::vector<Block> &paletteEntries) {
-		if (wordArray.size() != words.size()) {
-			throw std::length_error("word array size should be exactly " + std::to_string(WORD_COUNT) + " words for a " + std::to_string(BITS_PER_BLOCK) + "bpb block array, got " + std::to_string(wordArray.size()) + " words");
+	PalettedBlockArray(Block block) {
+		memset(words.data(), 0, sizeof(words));
+		palette[nextPaletteIndex++] = block;
+	}
+
+	PalettedBlockArray(std::vector<char> &wordArray, std::vector<Block> &paletteEntries) {
+		if (wordArray.size() != sizeof(words)) {
+			throw std::length_error("word array size should be exactly " + std::to_string(sizeof(words)) + " bytes for a " + std::to_string(BITS_PER_BLOCK) + "bpb block array, got " + std::to_string(wordArray.size()) + " bytes");
 		}
 		if (paletteEntries.size() > MAX_PALETTE_SIZE) {
 			throw std::length_error("palette size should be at most " + std::to_string(MAX_PALETTE_SIZE) + " entries for a " + std::to_string(BITS_PER_BLOCK) + "bpb block array, got " + std::to_string(paletteEntries.size()) + " entries");
@@ -104,14 +111,14 @@ public:
 			throw std::length_error("palette cannot have a zero size");
 		}
 
-		memcpy(words.data(), wordArray.data(), words.size() * sizeof(Word));
+		memcpy(words.data(), wordArray.data(), sizeof(words));
 		memcpy(palette.data(), paletteEntries.data(), paletteEntries.size() * sizeof(Block));
 		nextPaletteIndex = (unsigned short)paletteEntries.size();
 	}
 
-	const Word *getWordArray(unsigned short &arraySize) const {
-		arraySize = (unsigned short)words.size();
-		return words.data();
+	const char *getWordArray(unsigned int &length) const {
+		length = sizeof(words);
+		return (const char *) words.data();
 	}
 
 	const Block *getPalette(unsigned short &paletteSize) const {
@@ -202,7 +209,7 @@ public:
 		}
 	}
 
-	void convertFrom(IPalettedBlockArray<Block, Word> &otherArray) {
+	void convertFrom(IPalettedBlockArray<Block> &otherArray) {
 		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
 			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
 				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {

@@ -7,8 +7,11 @@ extern "C" {
 #include "php.h"
 }
 
+typedef unsigned int Block;
+typedef BlockArrayContainer<Block> NormalBlockArrayContainer;
+
 typedef struct {
-	BlockArrayContainer<> container;
+	NormalBlockArrayContainer container;
 	zend_object std;
 } paletted_block_array_obj;
 

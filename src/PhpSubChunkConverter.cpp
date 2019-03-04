@@ -8,6 +8,10 @@ extern "C" {
 }
 #include "PhpPalettedBlockArray.h"
 
+Block flattenData(uint8_t id, uint8_t meta) {
+	return (id << 4) | meta;
+}
+
 ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_SubChunkConverter_convertSubChunk, 0, 2, pocketmine\\level\\format\\PalettedBlockArray, 0)
 ZEND_ARG_TYPE_INFO(0, idArray, IS_STRING, 0)
 ZEND_ARG_TYPE_INFO(0, metaArray, IS_STRING, 0)
@@ -26,7 +30,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkXZY) {
 	object_init_ex(return_value, paletted_block_array_entry);
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
 	//TODO: needs length checks
-	convertSubChunkXZY(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val);
+	convertSubChunkXZY<Block>(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val, flattenData);
 }
 
 //TODO: repetetive, clean it up :(
@@ -44,7 +48,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkYZX) {
 	object_init_ex(return_value, paletted_block_array_entry);
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
 	//TODO: needs length checks
-	convertSubChunkYZX(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val);
+	convertSubChunkYZX<Block>(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val, flattenData);
 }
 
 
@@ -70,7 +74,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
 	//TODO: needs length checks
 	//TODO: check for valid Y offset
-	convertSubChunkFromLegacyColumn(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val, (uint8_t)yOffset);
+	convertSubChunkFromLegacyColumn<Block>(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val, (uint8_t)yOffset, flattenData);
 }
 
 zend_function_entry subchunk_converter_class_methods[] = {

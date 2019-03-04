@@ -11,10 +11,5 @@ if (PHP_CHUNKUTILS2 != "no") {
 		"PhpPalettedBlockArray.cpp PhpSubChunkConverter.cpp",
 		"chunkutils2"
 	);
-	ADD_SOURCES(
-		configure_module_dirname + "/lib",
-		"SubChunkConverter.cpp",
-		"chunkutils2"
-	);
 }
 
