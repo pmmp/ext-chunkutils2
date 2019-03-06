@@ -1,4 +1,5 @@
 #include <new>
+#include <gsl/span>
 
 #include "lib/BlockArrayContainer.h"
 #include "ZendUtil.h"
@@ -93,7 +94,7 @@ PHP_METHOD(PhpPalettedBlockArray, fromData) {
 	object_init_ex(return_value, paletted_block_array_entry);
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
 
-	std::vector<char> wordArray(ZSTR_VAL(wordArrayZstr), (ZSTR_VAL(wordArrayZstr) + ZSTR_LEN(wordArrayZstr)));
+	gsl::span<uint8_t> wordArray((uint8_t*)ZSTR_VAL(wordArrayZstr), (uint8_t*)(ZSTR_VAL(wordArrayZstr) + ZSTR_LEN(wordArrayZstr)));
 	std::vector<Block> palette;
 
 	HashTable *paletteHt = Z_ARRVAL_P(paletteZarray);

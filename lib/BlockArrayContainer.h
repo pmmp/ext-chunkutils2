@@ -5,6 +5,7 @@
 #include <exception>
 #include <string>
 #include <vector>
+#include <gsl/span>
 
 #include "PalettedBlockArray.h"
 
@@ -13,7 +14,7 @@ class BlockArrayContainer {
 private:
 	typedef IPalettedBlockArray<Block> BlockArray;
 
-	static BlockArray *blockArrayFromData(uint8_t bitsPerBlock, std::vector<char> &wordArray, std::vector<Block> &paletteEntries) {
+	static BlockArray *blockArrayFromData(uint8_t bitsPerBlock, gsl::span<uint8_t> &wordArray, std::vector<Block> &paletteEntries) {
 #define SWITCH_CASE(i) case i: return new PalettedBlockArray<i, Block>(wordArray, paletteEntries);
 		switch (bitsPerBlock) {
 			SWITCH_CASE(1)
@@ -100,7 +101,7 @@ public:
 		blockArray = blockArrayFromCapacity(capacity);
 	}
 
-	BlockArrayContainer(uint8_t bitsPerBlock, std::vector<char> &wordArray, std::vector<Block> &paletteEntries) {
+	BlockArrayContainer(uint8_t bitsPerBlock, gsl::span<uint8_t> &wordArray, std::vector<Block> &paletteEntries) {
 		blockArray = blockArrayFromData(bitsPerBlock, wordArray, paletteEntries);
 	}
 

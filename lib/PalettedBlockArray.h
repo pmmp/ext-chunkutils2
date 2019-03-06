@@ -12,6 +12,7 @@
 #include <exception>
 #include <string>
 #include <vector>
+#include <gsl/span>
 
 template<typename Block>
 class IPalettedBlockArray {
@@ -102,8 +103,9 @@ public:
 		palette[nextPaletteIndex++] = block;
 	}
 
-	PalettedBlockArray(std::vector<char> &wordArray, std::vector<Block> &paletteEntries) {
+	PalettedBlockArray(gsl::span<uint8_t> &wordArray, std::vector<Block> &paletteEntries) {
 		if (wordArray.size() != sizeof(words)) {
+			//TODO: known-size span can replace this check
 			throw std::length_error("word array size should be exactly " + std::to_string(sizeof(words)) + " bytes for a " + std::to_string(BITS_PER_BLOCK) + "bpb block array, got " + std::to_string(wordArray.size()) + " bytes");
 		}
 		if (paletteEntries.size() > MAX_PALETTE_SIZE) {
