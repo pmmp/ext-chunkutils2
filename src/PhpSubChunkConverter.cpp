@@ -1,3 +1,4 @@
+#include <gsl/span>
 
 #include "lib/SubChunkConverter.h"
 #include "ZendUtil.h"
@@ -5,6 +6,8 @@
 
 extern "C" {
 #include "php.h"
+#include "Zend/zend_exceptions.h"
+#include "ext/spl/spl_exceptions.h"
 }
 #include "PhpPalettedBlockArray.h"
 
@@ -26,11 +29,19 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkXZY) {
 		Z_PARAM_STR(metaArray)
 	ZEND_PARSE_PARAMETERS_END();
 
-
 	object_init_ex(return_value, paletted_block_array_entry);
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
-	//TODO: needs length checks
-	convertSubChunkXZY<Block>(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val, flattenData);
+
+	try {
+		LegacySubChunkIds idSpan((uint8_t *)ZSTR_VAL(idArray), (uint8_t *)(ZSTR_VAL(idArray) + ZSTR_LEN(idArray)));
+		LegacySubChunkMetas metaSpan((uint8_t *)ZSTR_VAL(metaArray), (uint8_t *)(ZSTR_VAL(metaArray) + ZSTR_LEN(metaArray)));
+		convertSubChunkXZY<Block>(&intern->container, idSpan, metaSpan, flattenData);
+	}
+	catch (gsl::fail_fast &e) {
+		zval_ptr_dtor(return_value);
+		zend_throw_exception_ex(spl_ce_LengthException, 0, "Invalid data sizes (got %zu and %zu)", ZSTR_LEN(idArray), ZSTR_LEN(metaArray));
+		return;
+	}
 }
 
 //TODO: repetetive, clean it up :(
@@ -47,8 +58,17 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkYZX) {
 
 	object_init_ex(return_value, paletted_block_array_entry);
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
-	//TODO: needs length checks
-	convertSubChunkYZX<Block>(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val, flattenData);
+
+	try {
+		LegacySubChunkIds idSpan((uint8_t *)ZSTR_VAL(idArray), (uint8_t *)(ZSTR_VAL(idArray) + ZSTR_LEN(idArray)));
+		LegacySubChunkMetas metaSpan((uint8_t *)ZSTR_VAL(metaArray), (uint8_t *)(ZSTR_VAL(metaArray) + ZSTR_LEN(metaArray)));
+		convertSubChunkYZX<Block>(&intern->container, idSpan, metaSpan, flattenData);
+	}
+	catch (gsl::fail_fast &e) {
+		zval_ptr_dtor(return_value);
+		zend_throw_exception_ex(spl_ce_LengthException, 0, "Invalid data sizes (got %zu and %zu)", ZSTR_LEN(idArray), ZSTR_LEN(metaArray));
+		return;
+	}
 }
 
 
@@ -72,9 +92,19 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
 
 	object_init_ex(return_value, paletted_block_array_entry);
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
-	//TODO: needs length checks
-	//TODO: check for valid Y offset
-	convertSubChunkFromLegacyColumn<Block>(&intern->container, (uint8_t*)idArray->val, (uint8_t*)metaArray->val, (uint8_t)yOffset, flattenData);
+
+	try {
+		LegacyChunkColumnIds idSpan((uint8_t *)ZSTR_VAL(idArray), (uint8_t *)(ZSTR_VAL(idArray) + ZSTR_LEN(idArray)));
+		LegacyChunkColumnMetas metaSpan((uint8_t *)ZSTR_VAL(metaArray), (uint8_t *)(ZSTR_VAL(metaArray) + ZSTR_LEN(metaArray)));
+
+		//TODO: check for valid Y offset
+		convertSubChunkFromLegacyColumn<Block>(&intern->container, idSpan, metaSpan, (uint8_t)yOffset, flattenData);
+	}
+	catch (gsl::fail_fast &e) {
+		zval_ptr_dtor(return_value);
+		zend_throw_exception_ex(spl_ce_LengthException, 0, "Invalid data sizes (got %zu and %zu)", ZSTR_LEN(idArray), ZSTR_LEN(metaArray));
+		return;
+	}
 }
 
 zend_function_entry subchunk_converter_class_methods[] = {

@@ -4,7 +4,7 @@
 ARG_ENABLE("chunkutils2", "Enable PocketMine ChunkUtils2 extension", "no");
 
 if (PHP_CHUNKUTILS2 != "no") {
-	EXTENSION("chunkutils2", "chunkutils2.cpp", PHP_CHUNKUTILS2_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 /I" + configure_module_dirname + " /I" + configure_module_dirname + "/gsl/include");
+	EXTENSION("chunkutils2", "chunkutils2.cpp", PHP_CHUNKUTILS2_SHARED, "/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1 /I" + configure_module_dirname + " /I" + configure_module_dirname + "/gsl/include /DGSL_THROW_ON_CONTRACT_VIOLATION=1");
 	ADD_FLAG("CFLAGS_CHUNKUTILS2", "/EHsc");
 	ADD_SOURCES(
 		configure_module_dirname + "/src",
