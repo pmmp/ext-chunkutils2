@@ -13,8 +13,8 @@ typedef gsl::span<uint8_t, 32768> LegacyChunkColumnIds;
 typedef gsl::span<uint8_t, 16384> LegacyChunkColumnMetas;
 
 #define LOOP(GET_INDEX) \
-	uint8_t * idArray = idSpan.data(); \
-	uint8_t * metaArray = metaSpan.data(); \
+	const uint8_t * idArray = idSpan.data(); \
+	const uint8_t * metaArray = metaSpan.data(); \
 	bool seen[4096] = {}; \
 	unsigned short id1Idx, id2Idx, metaIdx; \
 	unsigned short unique = 0; \
@@ -49,7 +49,7 @@ typedef gsl::span<uint8_t, 16384> LegacyChunkColumnMetas;
 	} \
 
 template<typename Block>
-void convertSubChunkXZY(BlockArrayContainer<Block> * result, LegacySubChunkIds &idSpan, LegacySubChunkMetas &metaSpan, std::function<Block(uint8_t id, uint8_t meta)> mapper) {
+void convertSubChunkXZY(BlockArrayContainer<Block> * result, const LegacySubChunkIds &idSpan, const LegacySubChunkMetas &metaSpan, const std::function<Block(uint8_t id, uint8_t meta)> mapper) {
 	LOOP(
 		id1Idx = (x << 8) | (z << 4) | (y << 1);
 		id2Idx = id1Idx | 1;
@@ -57,8 +57,8 @@ void convertSubChunkXZY(BlockArrayContainer<Block> * result, LegacySubChunkIds &
 	)
 }
 
-static inline void rotateByteArray(LegacySubChunkIds &byteArray, LegacySubChunkIds &resultArray) {
-	auto data = byteArray.data();
+static inline void rotateByteArray(const LegacySubChunkIds &byteArray, const LegacySubChunkIds &resultArray) {
+	const auto data = byteArray.data();
 	auto result = resultArray.data();
 	for (auto y = 0; y < 16; ++y) {
 		for (auto z = 0; z < 16; ++z) {
@@ -69,8 +69,8 @@ static inline void rotateByteArray(LegacySubChunkIds &byteArray, LegacySubChunkI
 	}
 }
 
-static inline void rotateNibbleArray(LegacySubChunkMetas &nibbleArray, LegacySubChunkMetas &resultArray) {
-	auto data = nibbleArray.data();
+static inline void rotateNibbleArray(const LegacySubChunkMetas &nibbleArray, const LegacySubChunkMetas &resultArray) {
+	const auto data = nibbleArray.data();
 	auto result = resultArray.data();
 	auto i = 0;
 	for (auto x = 0; x < 8; x++) {
@@ -90,7 +90,7 @@ static inline void rotateNibbleArray(LegacySubChunkMetas &nibbleArray, LegacySub
 }
 
 template<typename Block>
-void convertSubChunkYZX(BlockArrayContainer<Block> * result, LegacySubChunkIds &idSpan, LegacySubChunkMetas &metaSpan, std::function<Block(uint8_t id, uint8_t meta)> mapper) {
+void convertSubChunkYZX(BlockArrayContainer<Block> * result, const LegacySubChunkIds &idSpan, const LegacySubChunkMetas &metaSpan, const std::function<Block(uint8_t id, uint8_t meta)> mapper) {
 	uint8_t rotatedByteArray[4096];
 	uint8_t rotatedNibbleArray[2048];
 	LegacySubChunkIds rotatedIds(rotatedByteArray);
@@ -102,7 +102,7 @@ void convertSubChunkYZX(BlockArrayContainer<Block> * result, LegacySubChunkIds &
 }
 
 template<typename Block>
-void convertSubChunkFromLegacyColumn(BlockArrayContainer<Block> * result, LegacyChunkColumnIds &idSpan, LegacyChunkColumnMetas &metaSpan, uint8_t yOffset, std::function<Block(uint8_t id, uint8_t meta)> mapper) {
+void convertSubChunkFromLegacyColumn(BlockArrayContainer<Block> * result, const LegacyChunkColumnIds &idSpan, const LegacyChunkColumnMetas &metaSpan, const uint8_t yOffset, const std::function<Block(uint8_t id, uint8_t meta)> mapper) {
 	LOOP(
 		id1Idx = (x << 11) | (z << 7) | (yOffset << 4) | (y << 1);
 		id2Idx = id1Idx | 1;
