@@ -158,20 +158,21 @@ int paletted_block_array_unserialize(zval *object, zend_class_entry *ce, const u
 
 	const unsigned char *start = buf;
 	const unsigned char *end = buf + buf_len;
+	zval *bitsPerBlock, *wordArray, *palette, *properties;
 
-	zval *bitsPerBlock = var_tmp_var(&unserialize_data);
+	bitsPerBlock = var_tmp_var(&unserialize_data);
 	if (!php_var_unserialize(bitsPerBlock, &start, end, &unserialize_data) || Z_TYPE_P(bitsPerBlock) != IS_LONG) {
 		zend_throw_exception(NULL, "Failed to unserialize bits-per-block value", 0);
 		goto end;
 	}
 
-	zval *wordArray = var_tmp_var(&unserialize_data);
+	wordArray = var_tmp_var(&unserialize_data);
 	if (!php_var_unserialize(wordArray, &start, end, &unserialize_data) || Z_TYPE_P(wordArray) != IS_STRING) {
 		zend_throw_exception(NULL, "Failed to unserialize word array", 0);
 		goto end;
 	}
 
-	zval *palette = var_tmp_var(&unserialize_data);
+	palette = var_tmp_var(&unserialize_data);
 	if (!php_var_unserialize(palette, &start, end, &unserialize_data) || Z_TYPE_P(palette) != IS_ARRAY) {
 		zend_throw_exception(NULL, "Failed to unserialize palette", 0);
 		goto end;
@@ -179,7 +180,7 @@ int paletted_block_array_unserialize(zval *object, zend_class_entry *ce, const u
 
 	paletted_block_array_from_data(object, Z_LVAL_P(bitsPerBlock), Z_STR_P(wordArray), Z_ARRVAL_P(palette));
 
-	zval *properties = var_tmp_var(&unserialize_data);
+	properties = var_tmp_var(&unserialize_data);
 	if (!php_var_unserialize(properties, &start, end, &unserialize_data) || Z_TYPE_P(palette) != IS_ARRAY) {
 		zend_throw_exception(NULL, "Failed to unserialize user properties", 0);
 		goto end;
