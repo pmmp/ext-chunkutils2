@@ -28,6 +28,15 @@ zend_object* paletted_block_array_new(zend_class_entry *class_type) {
 	return &object->std;
 }
 
+zend_object* paletted_block_array_clone(zval *object) {
+	paletted_block_array_obj *old_object = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(object));
+	paletted_block_array_obj *new_object = fetch_from_zend_object<paletted_block_array_obj>(paletted_block_array_new(Z_OBJCE_P(object)));
+	new_object->container = old_object->container; //this calls the copy assignment operator
+
+	zend_objects_clone_members(&new_object->std, &old_object->std); //copy user-assigned properties
+
+	return &new_object->std;
+}
 
 void paletted_block_array_free(zend_object *obj) {
 	paletted_block_array_obj *object = fetch_from_zend_object<paletted_block_array_obj>(obj);
@@ -319,6 +328,7 @@ void register_paletted_block_array_class() {
 	memcpy(&paletted_block_array_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	paletted_block_array_handlers.offset = XtOffsetOf(paletted_block_array_obj, std);
 	paletted_block_array_handlers.free_obj = paletted_block_array_free;
+	paletted_block_array_handlers.clone_obj = paletted_block_array_clone;
 
 	zend_class_entry ce;
 	INIT_CLASS_ENTRY(ce, "pocketmine\\level\\format\\PalettedBlockArray", paletted_block_array_class_methods);

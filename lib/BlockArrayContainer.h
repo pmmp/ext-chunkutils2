@@ -105,6 +105,17 @@ public:
 		blockArray = blockArrayFromData(bitsPerBlock, wordArray, paletteEntries);
 	}
 
+	BlockArrayContainer(const BlockArrayContainer &other) {
+		blockArray = other.blockArray->clone();
+	}
+
+	BlockArrayContainer& operator=(const BlockArrayContainer &other) {
+		if (&other != this) {
+			blockArray = other.blockArray->clone();
+		}
+		return *this;
+	}
+
 	~BlockArrayContainer() {
 		delete blockArray;
 	}

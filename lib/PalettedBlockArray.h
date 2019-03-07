@@ -50,6 +50,8 @@ public:
 	virtual void replaceAll(Block from, Block to) = 0;
 
 	virtual void convertFrom(IPalettedBlockArray<Block> &otherArray) = 0;
+
+	virtual IPalettedBlockArray<Block> *clone() const = 0;
 };
 
 template <uint8_t BITS_PER_BLOCK, typename Block>
@@ -118,6 +120,12 @@ public:
 		memcpy(words.data(), wordArray.data(), sizeof(words));
 		memcpy(palette.data(), paletteEntries.data(), paletteEntries.size() * sizeof(Block));
 		nextPaletteIndex = (unsigned short)paletteEntries.size();
+	}
+
+	PalettedBlockArray(const PalettedBlockArray &otherArray) {
+		memcpy(words.data(), otherArray.words.data(), sizeof(words));
+		memcpy(palette.data(), otherArray.palette.data(), sizeof(palette));
+		nextPaletteIndex = otherArray.nextPaletteIndex;
 	}
 
 	const char *getWordArray(unsigned int &length) const {
@@ -223,6 +231,10 @@ public:
 				}
 			}
 		}
+	}
+
+	Base *clone() const {
+		return new PalettedBlockArray(*this);
 	}
 };
 
