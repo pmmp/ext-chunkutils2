@@ -107,15 +107,24 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
 	}
 }
 
+ZEND_BEGIN_ARG_INFO(arginfo_SubChunkConverter___construct, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(PhpSubChunkConverter, __construct) {
+	//NOOP
+}
+
 zend_function_entry subchunk_converter_class_methods[] = {
 	PHP_ME(PhpSubChunkConverter, convertSubChunkXZY, arginfo_SubChunkConverter_convertSubChunk, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhpSubChunkConverter, convertSubChunkYZX, arginfo_SubChunkConverter_convertSubChunk, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhpSubChunkConverter, convertSubChunkFromLegacyColumn, arginfo_SubChunkConverter_convertSubChunkFromLegacyColumn, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PhpSubChunkConverter, __construct, arginfo_SubChunkConverter___construct, ZEND_ACC_CTOR | ZEND_ACC_PRIVATE)
 	PHP_FE_END
 };
 
 void register_sub_chunk_converter_class() {
 	zend_class_entry ce;
 	INIT_CLASS_ENTRY(ce, "pocketmine\\level\\format\\io\\SubChunkConverter", subchunk_converter_class_methods);
-	zend_register_internal_class(&ce);
+	auto registered = zend_register_internal_class(&ce);
+	registered->ce_flags |= ZEND_ACC_FINAL;
 }

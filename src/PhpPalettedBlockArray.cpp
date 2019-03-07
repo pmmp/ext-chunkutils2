@@ -334,4 +334,5 @@ void register_paletted_block_array_class() {
 	INIT_CLASS_ENTRY(ce, "pocketmine\\level\\format\\PalettedBlockArray", paletted_block_array_class_methods);
 	ce.create_object = paletted_block_array_new;
 	paletted_block_array_entry = zend_register_internal_class(&ce);
+	paletted_block_array_entry->ce_flags |= ZEND_ACC_FINAL;
 }
