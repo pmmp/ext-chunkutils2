@@ -29,7 +29,7 @@ static inline bool checkPaletteEntrySize(zend_long v) {
 	return true;
 }
 
-static void paletted_block_array_from_data(zval *return_value, zend_long bitsPerBlock, zend_string *wordArrayZstr, HashTable *paletteHt) {
+static bool paletted_block_array_from_data(zval *return_value, zend_long bitsPerBlock, zend_string *wordArrayZstr, HashTable *paletteHt) {
 	object_init_ex(return_value, paletted_block_array_entry);
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
 
@@ -49,7 +49,7 @@ static void paletted_block_array_from_data(zval *return_value, zend_long bitsPer
 
 		if (!checkPaletteEntrySize(Z_LVAL_P(current))) {
 			zval_ptr_dtor(return_value);
-			return;
+			return false;
 		}
 		b = (Block)Z_LVAL_P(current);
 		palette.push_back(b);
@@ -57,10 +57,12 @@ static void paletted_block_array_from_data(zval *return_value, zend_long bitsPer
 
 	try {
 		new(&intern->container) NormalBlockArrayContainer((uint8_t)bitsPerBlock, wordArray, palette);
+		return true;
 	}
 	catch (std::exception& e) {
 		zval_ptr_dtor(return_value);
 		zend_throw_exception_ex(spl_ce_RuntimeException, 0, e.what());
+		return false;
 	}
 }
 
@@ -178,10 +180,12 @@ int paletted_block_array_unserialize(zval *object, zend_class_entry *ce, const u
 		goto end;
 	}
 
-	paletted_block_array_from_data(object, Z_LVAL_P(bitsPerBlock), Z_STR_P(wordArray), Z_ARRVAL_P(palette));
+	if (!paletted_block_array_from_data(object, Z_LVAL_P(bitsPerBlock), Z_STR_P(wordArray), Z_ARRVAL_P(palette))) {
+		goto end;
+	}
 
 	properties = var_tmp_var(&unserialize_data);
-	if (!php_var_unserialize(properties, &start, end, &unserialize_data) || Z_TYPE_P(palette) != IS_ARRAY) {
+	if (!php_var_unserialize(properties, &start, end, &unserialize_data) || Z_TYPE_P(properties) != IS_ARRAY) {
 		zend_throw_exception(NULL, "Failed to unserialize user properties", 0);
 		goto end;
 	}
