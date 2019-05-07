@@ -18,7 +18,7 @@ foreach($sizes as [$idSize, $dataSize]){
 	$ids = str_repeat("\x00", $idSize);
 	$data = str_repeat("\x00", $dataSize);
 	try{
-		\pocketmine\level\format\io\SubChunkConverter::convertSubChunkYZX($ids, $data);
+		\pocketmine\world\format\io\SubChunkConverter::convertSubChunkYZX($ids, $data);
 	}catch(\LengthException $e){
 		var_dump($e->getMessage());
 	}

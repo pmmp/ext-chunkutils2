@@ -10,7 +10,7 @@ $data = random_bytes(16384);
 
 $checked = 0;
 for($yOffset = 0; $yOffset < 8; ++$yOffset){
-	$converted = \pocketmine\level\format\io\SubChunkConverter::convertSubChunkFromLegacyColumn($ids, $data, $yOffset);
+	$converted = \pocketmine\world\format\io\SubChunkConverter::convertSubChunkFromLegacyColumn($ids, $data, $yOffset);
 	for($x = 0; $x < 16; ++$x){
 		for($z = 0; $z < 16; ++$z){
 			for($y = 0; $y < 16; ++$y){

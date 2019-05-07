@@ -9,7 +9,7 @@ if(!extension_loaded("chunkutils2")) die("skip extension not loaded");
 
 for($i = 0; $i < 20; ++$i){
 	try{
-		var_dump(\pocketmine\level\format\PalettedBlockArray::getExpectedWordArraySize($i));
+		var_dump(\pocketmine\world\format\PalettedBlockArray::getExpectedWordArraySize($i));
 	}catch(\InvalidArgumentException $e){
 		echo $e->getMessage() . "\n";
 	}
@@ -17,7 +17,7 @@ for($i = 0; $i < 20; ++$i){
 
 //an outlier to make sure invalid-argument checks are working
 try{
-	var_dump(\pocketmine\level\format\PalettedBlockArray::getExpectedWordArraySize(257));
+	var_dump(\pocketmine\world\format\PalettedBlockArray::getExpectedWordArraySize(257));
 }catch(\InvalidArgumentException $e){
 	echo $e->getMessage() . "\n";
 }

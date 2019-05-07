@@ -5,10 +5,10 @@ Tests that SubChunkConverter cannot be instantiated
 --FILE--
 <?php
 
-var_dump(new \pocketmine\level\format\io\SubChunkConverter);
+var_dump(new \pocketmine\world\format\io\SubChunkConverter);
 ?>
 --EXPECTF--
-Fatal error: Uncaught Error: Call to private pocketmine\level\format\io\SubChunkConverter::__construct() from invalid context in %s:%d
+Fatal error: Uncaught Error: Call to private pocketmine\world\format\io\SubChunkConverter::__construct() from invalid context in %s:%d
 Stack trace:
 #0 {main}
   thrown in %s on line %d

@@ -12,14 +12,14 @@ $values = [PHP_INT_MIN, -1, PHP_INT_MAX, (1 << 32)];
 
 foreach($values as $v){
 	try{
-		$palette = new \pocketmine\level\format\PalettedBlockArray($v);
+		$palette = new \pocketmine\world\format\PalettedBlockArray($v);
 		var_dump("bad");
 	}catch(\InvalidArgumentException $e){
 		echo $e->getMessage() . "\n";
 	}
 
 	try{
-		$palette = \pocketmine\level\format\PalettedBlockArray::fromData(1, str_repeat("\x00", 512), [$v]);
+		$palette = \pocketmine\world\format\PalettedBlockArray::fromData(1, str_repeat("\x00", 512), [$v]);
 		var_dump("bad");
 	}catch(\InvalidArgumentException $e){
 		echo $e->getMessage() . "\n";

@@ -9,25 +9,25 @@ foreach([1,2,3,4,5,6,8,16] as $bitsPerBlock){
 	$blocksPerWord = intdiv(32, $bitsPerBlock);
 	$payloadSize = (intdiv(4096, $blocksPerWord) + ((4096 % $blocksPerWord) !== 0 ? 1 : 0)) * 4;
 
-	$palette = \pocketmine\level\format\PalettedBlockArray::fromData($bitsPerBlock, str_repeat("\x00", $payloadSize), [$bitsPerBlock]);
+	$palette = \pocketmine\world\format\PalettedBlockArray::fromData($bitsPerBlock, str_repeat("\x00", $payloadSize), [$bitsPerBlock]);
 	var_dump($palette->get(0, 0, 0));
 
 	try{
-		$palette = \pocketmine\level\format\PalettedBlockArray::fromData($bitsPerBlock, str_repeat("\x00", $payloadSize - 1), [$bitsPerBlock]);
+		$palette = \pocketmine\world\format\PalettedBlockArray::fromData($bitsPerBlock, str_repeat("\x00", $payloadSize - 1), [$bitsPerBlock]);
 		var_dump($palette->get(0, 0, 0));
 	}catch(\RuntimeException $e){
 		echo "size - 1 is not allowed\n";
 	}
 
 	try{
-		$palette = \pocketmine\level\format\PalettedBlockArray::fromData($bitsPerBlock, str_repeat("\x00", $payloadSize + 1), [$bitsPerBlock]);
+		$palette = \pocketmine\world\format\PalettedBlockArray::fromData($bitsPerBlock, str_repeat("\x00", $payloadSize + 1), [$bitsPerBlock]);
 		var_dump($palette->get(0, 0, 0));
 	}catch(\RuntimeException $e){
 		echo "size + 1 is not allowed\n";
 	}
 
 	try{
-		$palette = \pocketmine\level\format\PalettedBlockArray::fromData($bitsPerBlock, "", [$bitsPerBlock]);
+		$palette = \pocketmine\world\format\PalettedBlockArray::fromData($bitsPerBlock, "", [$bitsPerBlock]);
 		var_dump($palette->get(0, 0, 0));
 	}catch(\RuntimeException $e){
 		echo "empty payload is not allowed\n";

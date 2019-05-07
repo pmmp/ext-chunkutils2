@@ -8,7 +8,7 @@ Test conversion of a standard XZY subchunk
 $ids = random_bytes(4096);
 $data = random_bytes(2048);
 
-$t1 = \pocketmine\level\format\io\SubChunkConverter::convertSubChunkXZY($ids, $data);
+$t1 = \pocketmine\world\format\io\SubChunkConverter::convertSubChunkXZY($ids, $data);
 
 $checked = 0;
 for($x = 0; $x < 16; ++$x){

@@ -225,7 +225,7 @@ PHP_METHOD(PhpPalettedBlockArray, __construct) {
 	}
 }
 
-ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_PalettedBlockArray_fromData, 0, 3, pocketmine\\level\\format\\PalettedBlockArray, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_PalettedBlockArray_fromData, 0, 3, pocketmine\\world\\format\\PalettedBlockArray, 0)
 	ZEND_ARG_TYPE_INFO(0, bitsPerBlock, IS_LONG, 0)
 	ZEND_ARG_TYPE_INFO(0, wordArray, IS_STRING, 0)
 	ZEND_ARG_ARRAY_INFO(0, palette, 0)
@@ -427,7 +427,7 @@ void register_paletted_block_array_class() {
 	paletted_block_array_handlers.clone_obj = paletted_block_array_clone;
 
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, "pocketmine\\level\\format\\PalettedBlockArray", paletted_block_array_class_methods);
+	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\PalettedBlockArray", paletted_block_array_class_methods);
 	ce.create_object = paletted_block_array_new;
 	ce.serialize = paletted_block_array_serialize;
 	ce.unserialize = paletted_block_array_unserialize;

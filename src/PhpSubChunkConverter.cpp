@@ -15,7 +15,7 @@ Block flattenData(uint8_t id, uint8_t meta) {
 	return (id << 4) | meta;
 }
 
-ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_SubChunkConverter_convertSubChunk, 0, 2, pocketmine\\level\\format\\PalettedBlockArray, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_SubChunkConverter_convertSubChunk, 0, 2, pocketmine\\world\\format\\PalettedBlockArray, 0)
 ZEND_ARG_TYPE_INFO(0, idArray, IS_STRING, 0)
 ZEND_ARG_TYPE_INFO(0, metaArray, IS_STRING, 0)
 ZEND_END_ARG_INFO()
@@ -72,7 +72,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkYZX) {
 }
 
 
-ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_SubChunkConverter_convertSubChunkFromLegacyColumn, 0, 3, pocketmine\\level\\format\\PalettedBlockArray, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_SubChunkConverter_convertSubChunkFromLegacyColumn, 0, 3, pocketmine\\world\\format\\PalettedBlockArray, 0)
 ZEND_ARG_TYPE_INFO(0, idArray, IS_STRING, 0)
 ZEND_ARG_TYPE_INFO(0, metaArray, IS_STRING, 0)
 ZEND_ARG_TYPE_INFO(0, yOffset, IS_LONG, 0)
@@ -124,7 +124,7 @@ zend_function_entry subchunk_converter_class_methods[] = {
 
 void register_sub_chunk_converter_class() {
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, "pocketmine\\level\\format\\io\\SubChunkConverter", subchunk_converter_class_methods);
+	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\io\\SubChunkConverter", subchunk_converter_class_methods);
 	auto registered = zend_register_internal_class(&ce);
 	registered->ce_flags |= ZEND_ACC_FINAL;
 }

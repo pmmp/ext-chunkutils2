@@ -5,7 +5,7 @@ Check freshly allocated paletted array is filled with the given initializer
 --FILE--
 <?php
 const FILL_VALUE = 6;
-$array = new \pocketmine\level\format\PalettedBlockArray(FILL_VALUE);
+$array = new \pocketmine\world\format\PalettedBlockArray(FILL_VALUE);
 
 $checked = 0;
 for($x = 0; $x < 16; ++$x){

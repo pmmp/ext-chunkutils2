@@ -5,8 +5,8 @@ Tests that PalettedBlockArray cannot be extended
 --FILE--
 <?php
 
-var_dump(new class(1) extends \pocketmine\level\format\PalettedBlockArray{});
+var_dump(new class(1) extends \pocketmine\world\format\PalettedBlockArray{});
 
 ?>
 --EXPECTF--
-Fatal error: Class class@anonymous may not inherit from final class (pocketmine\level\format\PalettedBlockArray) in %s on line %d
+Fatal error: Class class@anonymous may not inherit from final class (pocketmine\world\format\PalettedBlockArray) in %s on line %d

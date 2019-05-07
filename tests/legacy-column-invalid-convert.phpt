@@ -20,7 +20,7 @@ foreach($sizes as [$idSize, $dataSize]){
 	$ids = str_repeat("\x00", $idSize);
 	$data = str_repeat("\x00", $dataSize);
 	try{
-		\pocketmine\level\format\io\SubChunkConverter::convertSubChunkFromLegacyColumn($ids, $data, 0);
+		\pocketmine\world\format\io\SubChunkConverter::convertSubChunkFromLegacyColumn($ids, $data, 0);
 	}catch(\LengthException $e){
 		var_dump($e->getMessage());
 	}
