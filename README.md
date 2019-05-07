@@ -10,6 +10,6 @@ This extension implements some performance-sensitive components of PocketMine-MP
 ## What's in the extension?
 At the time of writing:
 
-- `\pocketmine\level\format\PalettedBlockArray`: This class implements paletted block-storages as per modern MCPE since 1.2.13.
-- `\pocketmine\level\format\io\SubChunkConverter`: This class contains a series of helper methods for upgrading legacy world terrain.
+- `\pocketmine\world\format\PalettedBlockArray`: This class implements paletted block-storages as per modern MCPE since 1.2.13.
+- `\pocketmine\world\format\io\SubChunkConverter`: This class contains a series of helper methods for upgrading legacy world terrain.
 
