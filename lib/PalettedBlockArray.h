@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <algorithm>
 #include <array>
 #include <bitset>
 #include <climits>
@@ -46,10 +47,13 @@ public:
 	virtual Block get(unsigned char x, unsigned char y, unsigned char z) const = 0;
 	virtual bool set(unsigned char x, unsigned char y, unsigned char z, Block val) = 0;
 
+	virtual unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const = 0;
+
 	virtual void replace(unsigned short offset, Block val) = 0;
 	virtual void replaceAll(Block from, Block to) = 0;
 
-	virtual void convertFrom(IPalettedBlockArray<Block> &otherArray) = 0;
+	virtual void convertFrom(const IPalettedBlockArray<Block> &otherArray) = 0;
+	virtual void fastUpsize(const IPalettedBlockArray<Block> &otherArray) = 0;
 
 	virtual IPalettedBlockArray<Block> *clone() const = 0;
 };
@@ -86,7 +90,7 @@ private:
 		shift = (idx % BLOCKS_PER_WORD) * BITS_PER_BLOCK;
 	}
 
-	inline unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {
+	inline unsigned short _getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {
 		unsigned short wordIdx;
 		unsigned char shift;
 		find(x, y, z, wordIdx, shift);
@@ -94,7 +98,7 @@ private:
 		return (words[wordIdx] >> shift) & BLOCK_MASK;
 	}
 
-	inline void setPaletteOffset(unsigned char x, unsigned char y, unsigned char z, unsigned short offset) {
+	inline void _setPaletteOffset(unsigned char x, unsigned char y, unsigned char z, unsigned short offset) {
 		unsigned short wordIdx;
 		unsigned char shift;
 		find(x, y, z, wordIdx, shift);
@@ -161,7 +165,7 @@ public:
 		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
 			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
 				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
-					unsigned short paletteOffset = getPaletteOffset(x, y, z);
+					unsigned short paletteOffset = _getPaletteOffset(x, y, z);
 					if (!hasFound[paletteOffset]) {
 						++count;
 						hasFound[paletteOffset] = true;
@@ -178,7 +182,7 @@ public:
 	}
 
 	Block get(unsigned char x, unsigned char y, unsigned char z) const {
-		unsigned short offset = getPaletteOffset(x, y, z);
+		unsigned short offset = _getPaletteOffset(x, y, z);
 		assert(offset < nextPaletteIndex);
 		return palette[offset];
 	}
@@ -203,8 +207,12 @@ public:
 			this->mayNeedGC = true;
 		}
 
-		setPaletteOffset(x, y, z, offset);
+		_setPaletteOffset(x, y, z, offset);
 		return true;
+	}
+
+	unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {
+		return _getPaletteOffset(x, y, z);
 	}
 
 	void replace(unsigned short offset, Block val) {
@@ -225,13 +233,27 @@ public:
 		}
 	}
 
-	void convertFrom(IPalettedBlockArray<Block> &otherArray) {
+	void convertFrom(const IPalettedBlockArray<Block> &otherArray) {
 		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
 			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
 				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
 					if (!set(x, y, z, otherArray.get(x, y, z))) {
 						throw std::range_error("out of palette space");
 					}
+				}
+			}
+		}
+	}
+
+	void fastUpsize(const IPalettedBlockArray<Block> &otherArray) {
+		unsigned short paletteSize;
+		const Block *paletteStart = otherArray.getPalette(paletteSize);
+		nextPaletteIndex = paletteSize;
+		std::copy(paletteStart, paletteStart + paletteSize, palette.data());
+		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
+			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
+				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
+					_setPaletteOffset(x, y, z, otherArray.getPaletteOffset(x, y, z));
 				}
 			}
 		}

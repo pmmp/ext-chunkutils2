@@ -149,7 +149,7 @@ public:
 
 				BlockArray *newArray = blockArrayFromCapacity(count + 1);
 
-				newArray->convertFrom(*blockArray);
+				newArray->fastUpsize(*blockArray);
 				newArray->set(x, y, z, val);
 				delete blockArray;
 				blockArray = newArray;
