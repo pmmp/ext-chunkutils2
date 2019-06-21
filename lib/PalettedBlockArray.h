@@ -94,6 +94,14 @@ private:
 		return (words[wordIdx] >> shift) & BLOCK_MASK;
 	}
 
+	inline void setPaletteOffset(unsigned char x, unsigned char y, unsigned char z, unsigned short offset) {
+		unsigned short wordIdx;
+		unsigned char shift;
+		find(x, y, z, wordIdx, shift);
+
+		words[wordIdx] = (words[wordIdx] & ~(BLOCK_MASK << shift)) | (offset << shift);
+	}
+
 public:
 
 	PalettedBlockArray() {
@@ -195,11 +203,7 @@ public:
 			this->mayNeedGC = true;
 		}
 
-		unsigned short wordIdx;
-		unsigned char shift;
-		find(x, y, z, wordIdx, shift);
-
-		words[wordIdx] = (words[wordIdx] & ~(BLOCK_MASK << shift)) | (offset << shift);
+		setPaletteOffset(x, y, z, offset);
 		return true;
 	}
 
