@@ -142,7 +142,7 @@ public:
 
 	void set(unsigned char x, unsigned char y, unsigned char z, Block val) {
 		if (!blockArray->set(x, y, z, val)) {
-			unsigned short count = blockArray->countUniqueBlocks();
+			unsigned short count = blockArray->getPaletteSize();
 			if (count < BlockArray::ARRAY_CAPACITY) {
 				//reached max capacity and less than ARRAY_CAPACITY unique blocks in array
 				//this also automatically handles GC on chunks when there are unused palette entries in an array
