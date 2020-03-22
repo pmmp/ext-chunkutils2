@@ -8,10 +8,10 @@
 
 #include <algorithm>
 #include <array>
-#include <bitset>
 #include <climits>
 #include <exception>
 #include <string>
+#include <unordered_set>
 #include <vector>
 #include <gsl/span>
 
@@ -161,22 +161,17 @@ public:
 	}
 
 	unsigned short countUniqueBlocks() const {
-		std::bitset<MAX_PALETTE_SIZE> hasFound;
-		unsigned short count = 0;
+		std::unordered_set<Block> hasFound;
 
 		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
 			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
 				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
-					unsigned short paletteOffset = _getPaletteOffset(x, y, z);
-					if (!hasFound[paletteOffset]) {
-						++count;
-						hasFound[paletteOffset] = true;
-					}
+					hasFound.insert(_getPaletteOffset(x, y, z));
 				}
 			}
 		}
 
-		return count;
+		return hasFound.size();
 	}
 
 	uint8_t getBitsPerBlock() const {
