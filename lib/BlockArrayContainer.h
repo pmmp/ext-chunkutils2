@@ -52,26 +52,6 @@ private:
 #undef CONDITION
 	}
 
-	static uint8_t getMinBitsPerBlock(unsigned short capacity) {
-#define CONDITION(i) \
-		if (capacity <= PalettedBlockArray<i, Block>::MAX_PALETTE_SIZE) { \
-			return i; \
-		}
-
-		CONDITION(1)
-		CONDITION(2)
-		CONDITION(3)
-		CONDITION(4)
-		CONDITION(5)
-		CONDITION(6)
-		CONDITION(8)
-		CONDITION(16)
-
-#undef CONDITION
-
-		throw std::invalid_argument("invalid capacity specified: " + std::to_string(capacity));
-	}
-
 	BlockArray *blockArray = nullptr;
 
 public:
@@ -175,7 +155,7 @@ public:
 		if (forceCollect || blockArray->needsGarbageCollection()) {
 			auto unique = blockArray->countUniqueBlocks();
 
-			if (getMinBitsPerBlock(unique) != blockArray->getBitsPerBlock()) {
+			if (unique != blockArray->getPaletteSize()) {
 				BlockArray *newArray = blockArrayFromCapacity(unique);
 				assert(newArray != nullptr);
 				newArray->convertFrom(*blockArray);
