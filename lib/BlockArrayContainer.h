@@ -133,11 +133,15 @@ public:
 				newArray->set(x, y, z, val);
 				delete blockArray;
 				blockArray = newArray;
-			}
-			else {
-				//array already has ARRAY_CAPACITY unique blocks - force overwrite of existing blockstate
-				//this is a rather expensive way to do it... TODO: allow writes to arbitrary palette offsets
-				blockArray->replaceAll(blockArray->get(x, y, z), val);
+			} else if (blockArray->needsGarbageCollection()) {
+				//full palette but GC possible, run GC and try a second time
+				collectGarbage(false, 1);
+				set(x, y, z, val);
+			} else {
+				//full palette and GC not possible, force overwrite of existing blockstate
+				//this means there are no unused entries and this block isn't already in the palette, so GC is impossible
+				blockArray->replace(blockArray->getPaletteOffset(x, y, z), val);
+				blockArray->setGarbageCollected();
 			}
 		}
 	}
@@ -151,12 +155,12 @@ public:
 	}
 
 	// Repacks the block array to the smallest format possible with the number of unique blocks found
-	void collectGarbage(bool forceCollect) {
+	void collectGarbage(bool forceCollect, unsigned short reserved = 0) {
 		if (forceCollect || blockArray->needsGarbageCollection()) {
 			auto unique = blockArray->countUniqueBlocks();
 
 			if (unique != blockArray->getPaletteSize()) {
-				BlockArray *newArray = blockArrayFromCapacity(unique);
+				BlockArray *newArray = blockArrayFromCapacity(unique + reserved);
 				assert(newArray != nullptr);
 				newArray->convertFrom(*blockArray);
 				delete blockArray;
