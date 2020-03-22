@@ -56,6 +56,8 @@ public:
 	virtual void fastUpsize(const IPalettedBlockArray<Block> &otherArray) = 0;
 
 	virtual IPalettedBlockArray<Block> *clone() const = 0;
+
+	virtual ~IPalettedBlockArray() {}
 };
 
 template <uint8_t BITS_PER_BLOCK, typename Block>
