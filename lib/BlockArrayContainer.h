@@ -182,10 +182,7 @@ public:
 				delete blockArray;
 				blockArray = newArray;
 			}
-			else {
-				//this only needs to be set if the array was not reallocated
-				blockArray->setGarbageCollected();
-			}
+			blockArray->setGarbageCollected();
 		}
 	}
 };
