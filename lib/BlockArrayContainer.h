@@ -100,12 +100,12 @@ public:
 		delete blockArray;
 	}
 
-	const char *getWordArray(unsigned int &length) const {
-		return blockArray->getWordArray(length);
+	const gsl::span<const char> getWordArray() const {
+		return blockArray->getWordArray();
 	}
 
-	const Block *getPalette(unsigned short &paletteSize) const {
-		return blockArray->getPalette(paletteSize);
+	const gsl::span<const Block> getPalette() const {
+		return blockArray->getPalette();
 	}
 
 	unsigned short getMaxPaletteSize() const {

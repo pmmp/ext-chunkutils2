@@ -71,20 +71,18 @@ static void paletted_block_array_get_bits_per_block(zval *object, zval *return_v
 }
 
 static void paletted_block_array_get_word_array(zval *object, zval *return_value) {
-	unsigned int length;
-	const char *words = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(object))->container.getWordArray(length);
+	auto span = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(object))->container.getWordArray();
 
-	ZVAL_STRINGL(return_value, words, length);
+	ZVAL_STRINGL(return_value, span.data(), span.size());
 }
 
 static void paletted_block_array_get_palette(zval *object, zval *return_value) {
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(object));
 
-	unsigned short paletteSize;
-	const Block *palette = intern->container.getPalette(paletteSize);
+	auto palette = intern->container.getPalette();
 
-	array_init_size(return_value, paletteSize);
-	for (unsigned short i = 0; i < paletteSize; ++i) {
+	array_init_size(return_value, palette.size());
+	for (unsigned short i = 0; i < palette.size(); ++i) {
 		add_index_long(return_value, i, palette[i]);
 	}
 }

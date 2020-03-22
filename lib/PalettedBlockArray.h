@@ -35,9 +35,9 @@ public:
 		mayNeedGC = false;
 	}
 
-	virtual const char *getWordArray(unsigned int &length) const = 0;
+	virtual const gsl::span<const char> getWordArray() const = 0;
 
-	virtual const Block *getPalette(unsigned short &paletteSize) const = 0;
+	virtual const gsl::span<const Block> getPalette() const = 0;
 	virtual unsigned short getPaletteSize() const = 0;
 	virtual unsigned short getMaxPaletteSize() const = 0;
 
@@ -140,14 +140,12 @@ public:
 		nextPaletteIndex = otherArray.nextPaletteIndex;
 	}
 
-	const char *getWordArray(unsigned int &length) const {
-		length = sizeof(words);
-		return (const char *) words.data();
+	const gsl::span<const char> getWordArray() const {
+		return gsl::span<const char>((const char *) words.data(), sizeof(words));
 	}
 
-	const Block *getPalette(unsigned short &paletteSize) const {
-		paletteSize = nextPaletteIndex;
-		return palette.data();
+	const gsl::span<const Block> getPalette() const {
+		return gsl::span<const Block>(palette.data(), nextPaletteIndex);
 	}
 
 	unsigned short getPaletteSize() const {
@@ -248,10 +246,9 @@ public:
 	}
 
 	void fastUpsize(const IPalettedBlockArray<Block> &otherArray) {
-		unsigned short paletteSize;
-		const Block *paletteStart = otherArray.getPalette(paletteSize);
-		nextPaletteIndex = paletteSize;
-		std::copy(paletteStart, paletteStart + paletteSize, palette.data());
+		auto otherPalette = otherArray.getPalette();
+		nextPaletteIndex = otherPalette.size();
+		std::copy(otherPalette.data(), otherPalette.data() + otherPalette.size(), palette.data());
 		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
 			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
 				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
