@@ -132,12 +132,14 @@ public:
 		memcpy(words.data(), wordArray.data(), sizeof(words));
 		memcpy(palette.data(), paletteEntries.data(), paletteEntries.size() * sizeof(Block));
 		nextPaletteIndex = (unsigned short)paletteEntries.size();
+		this->mayNeedGC = true;
 	}
 
 	PalettedBlockArray(const PalettedBlockArray &otherArray) {
 		memcpy(words.data(), otherArray.words.data(), sizeof(words));
 		memcpy(palette.data(), otherArray.palette.data(), sizeof(palette));
 		nextPaletteIndex = otherArray.nextPaletteIndex;
+		this->mayNeedGC = otherArray.mayNeedGC;
 	}
 
 	const gsl::span<const char> getWordArray() const {
