@@ -220,6 +220,7 @@ public:
 			throw std::invalid_argument("offset must be less than palette size " + std::to_string(nextPaletteIndex));
 		}
 		palette[offset] = val;
+		this->mayNeedGC = true; //operation might create duplicate entries
 	}
 
 	void replaceAll(Block from, Block to) {
@@ -231,6 +232,7 @@ public:
 				//don't return here, because there might be duplicated block states from previous replace operations
 			}
 		}
+		this->mayNeedGC = true; //operation might create duplicate entries
 	}
 
 	void convertFrom(const IPalettedBlockArray<Block> &otherArray) {
