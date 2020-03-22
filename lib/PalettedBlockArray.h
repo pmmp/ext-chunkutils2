@@ -202,10 +202,10 @@ public:
 			}
 			offset = (short)nextPaletteIndex++;
 			palette[offset] = val;
-			this->mayNeedGC = true;
 		}
 
 		_setPaletteOffset(x, y, z, offset);
+		this->mayNeedGC = true;
 		return true;
 	}
 
