@@ -166,7 +166,7 @@ public:
 		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
 			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
 				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
-					hasFound.insert(_getPaletteOffset(x, y, z));
+					hasFound.insert(palette[_getPaletteOffset(x, y, z)]);
 				}
 			}
 		}
