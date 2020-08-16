@@ -17,7 +17,7 @@ for($x = 0; $x < 16; ++$x){
 			$actual = $t1->get($x, $y, $z);
 			
 			$idx = ($x << 8) | ($z << 4) | $y;
-			$meta = (ord($data{($x << 7) | ($z << 3) | ($y >> 1)}) >> (($y & 1) << 2)) & 0xf;
+			$meta = (ord($data[($x << 7) | ($z << 3) | ($y >> 1)]) >> (($y & 1) << 2)) & 0xf;
 			$expected = (ord($ids[$idx]) << 4) | $meta;
 			if($actual !== $expected){
 				die("mismatch at $x $y $z: expected $expected, got $actual");
