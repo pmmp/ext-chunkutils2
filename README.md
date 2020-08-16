@@ -13,3 +13,8 @@ At the time of writing:
 - `\pocketmine\world\format\PalettedBlockArray`: This class implements paletted block-storages as per modern MCPE since 1.2.13.
 - `\pocketmine\world\format\io\SubChunkConverter`: This class contains a series of helper methods for upgrading legacy world terrain.
 
+## What's in the folders?
+- `gsl`: Subtree merge of https://github.com/microsoft/GSL
+- `lib`: Library code implementing various chunk components. The code in here is unfettered by PHP and can be used on its own.
+- `src`: Binding code that glues together PHP and the C++ chunkutils2 components.
+- `tests`: `.phpt` tests for the extension which can be run with PHP's `run-tests.php` tool (or `make test` when using PHP's build system)
