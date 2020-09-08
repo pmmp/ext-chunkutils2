@@ -15,6 +15,10 @@ struct LightLevel {
 			throw std::invalid_argument("value out of range");
 		}
 	}
+
+	operator int() const {
+		return v;
+	}
 };
 
 class LightArray {
@@ -38,7 +42,7 @@ public:
 	}
 
 	LightArray(const LightLevel fillValue) {
-		mValues.fill((fillValue.v << 4) | fillValue.v);
+		mValues.fill((fillValue << 4) | fillValue);
 	}
 
 	LightLevel get(const uint8_t x, const uint8_t y, const uint8_t z) const {
@@ -53,7 +57,7 @@ public:
 		index(x, y, z, offset, shift);
 
 		auto byte = mValues[offset];
-		mValues[offset] = (byte & ~(0xf << shift)) | (value.v << shift);
+		mValues[offset] = (byte & ~(0xf << shift)) | (value << shift);
 	}
 
 	const gsl::span<const uint8_t, DATA_SIZE> getRawData() const {

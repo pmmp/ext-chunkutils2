@@ -130,7 +130,7 @@ PHP_METHOD(PhpLightArray, get) {
 	ZEND_PARSE_PARAMETERS_END();
 
 	auto object = fetch_from_zend_object<light_array_obj>(Z_OBJ_P(getThis()));
-	RETURN_LONG(static_cast<zend_long>(object->lightArray.get(x & 0xf, y & 0xf, z & 0xf).v));
+	RETURN_LONG(static_cast<zend_long>(object->lightArray.get(x & 0xf, y & 0xf, z & 0xf)));
 }
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_PhpLightArray_set, 0, 4, IS_VOID, 0)
