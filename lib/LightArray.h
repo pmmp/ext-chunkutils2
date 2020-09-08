@@ -38,7 +38,7 @@ public:
 	}
 
 	LightArray(const LightLevel fillValue) {
-		mValues.fill(fillValue.v);
+		mValues.fill((fillValue.v << 4) | fillValue.v);
 	}
 
 	LightLevel get(const uint8_t x, const uint8_t y, const uint8_t z) const {
