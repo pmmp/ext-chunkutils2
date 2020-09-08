@@ -15,7 +15,7 @@ extern "C" {
 }
 
 zend_class_entry *paletted_block_array_entry;
-zend_object_handlers paletted_block_array_handlers;
+static zend_object_handlers paletted_block_array_handlers;
 
 /* internal object methods */
 
@@ -89,7 +89,7 @@ static void paletted_block_array_get_palette(zval *object, zval *return_value) {
 
 /* internal object handlers */
 
-zend_object* paletted_block_array_new(zend_class_entry *class_type) {
+static zend_object* paletted_block_array_new(zend_class_entry *class_type) {
 	paletted_block_array_obj *object = (paletted_block_array_obj *)ecalloc(1, sizeof(paletted_block_array_obj) + zend_object_properties_size(class_type));
 
 	zend_object_std_init(&object->std, class_type);
@@ -100,7 +100,7 @@ zend_object* paletted_block_array_new(zend_class_entry *class_type) {
 	return &object->std;
 }
 
-zend_object* paletted_block_array_clone(zval *object) {
+static zend_object* paletted_block_array_clone(zval *object) {
 	paletted_block_array_obj *old_object = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(object));
 	paletted_block_array_obj *new_object = fetch_from_zend_object<paletted_block_array_obj>(paletted_block_array_new(Z_OBJCE_P(object)));
 	new_object->container = old_object->container; //this calls the copy assignment operator
@@ -110,7 +110,7 @@ zend_object* paletted_block_array_clone(zval *object) {
 	return &new_object->std;
 }
 
-void paletted_block_array_free(zend_object *obj) {
+static void paletted_block_array_free(zend_object *obj) {
 	paletted_block_array_obj *object = fetch_from_zend_object<paletted_block_array_obj>(obj);
 	object->container.~BlockArrayContainer();
 
@@ -118,7 +118,7 @@ void paletted_block_array_free(zend_object *obj) {
 	zend_object_std_dtor(&object->std);
 }
 
-int paletted_block_array_serialize(zval *obj, unsigned char **buffer, size_t *buf_len, zend_serialize_data *data) {
+static int paletted_block_array_serialize(zval *obj, unsigned char **buffer, size_t *buf_len, zend_serialize_data *data) {
 	paletted_block_array_obj *object = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(obj));
 
 	smart_str buf = { 0 };
@@ -150,7 +150,7 @@ int paletted_block_array_serialize(zval *obj, unsigned char **buffer, size_t *bu
 	return SUCCESS;
 }
 
-int paletted_block_array_unserialize(zval *object, zend_class_entry *ce, const unsigned char *buf, size_t buf_len, zend_unserialize_data *data) {
+static int paletted_block_array_unserialize(zval *object, zend_class_entry *ce, const unsigned char *buf, size_t buf_len, zend_unserialize_data *data) {
 	php_unserialize_data_t unserialize_data = (php_unserialize_data_t)data;
 	PHP_VAR_UNSERIALIZE_INIT(unserialize_data);
 
@@ -402,7 +402,7 @@ PHP_METHOD(PhpPalettedBlockArray, getExpectedWordArraySize) {
 	}
 }
 
-zend_function_entry paletted_block_array_class_methods[] = {
+static zend_function_entry paletted_block_array_class_methods[] = {
 	PHP_ME(PhpPalettedBlockArray, __construct, arginfo_PalettedBlockArray___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	PHP_ME(PhpPalettedBlockArray, fromData, arginfo_PalettedBlockArray_fromData, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhpPalettedBlockArray, getWordArray, arginfo_PalettedBlockArray_getWordArray, ZEND_ACC_PUBLIC)

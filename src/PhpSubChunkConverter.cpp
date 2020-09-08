@@ -11,7 +11,7 @@ extern "C" {
 }
 #include "PhpPalettedBlockArray.h"
 
-Block flattenData(uint8_t id, uint8_t meta) {
+static Block flattenData(uint8_t id, uint8_t meta) {
 	return (id << 4) | meta;
 }
 
@@ -114,7 +114,7 @@ PHP_METHOD(PhpSubChunkConverter, __construct) {
 	//NOOP
 }
 
-zend_function_entry subchunk_converter_class_methods[] = {
+static zend_function_entry subchunk_converter_class_methods[] = {
 	PHP_ME(PhpSubChunkConverter, convertSubChunkXZY, arginfo_SubChunkConverter_convertSubChunk, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhpSubChunkConverter, convertSubChunkYZX, arginfo_SubChunkConverter_convertSubChunk, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_ME(PhpSubChunkConverter, convertSubChunkFromLegacyColumn, arginfo_SubChunkConverter_convertSubChunkFromLegacyColumn, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
