@@ -22,6 +22,7 @@
 #include "config.h"
 #endif
 
+#include "src/PhpLightArray.h"
 #include "src/PhpPalettedBlockArray.h"
 #include "src/PhpSubChunkConverter.h"
 
@@ -35,6 +36,7 @@ extern "C" {
  */
 PHP_MINIT_FUNCTION(chunkutils2)
 {
+	register_light_array_class();
 	register_paletted_block_array_class();
 	register_sub_chunk_converter_class();
 	return SUCCESS;
