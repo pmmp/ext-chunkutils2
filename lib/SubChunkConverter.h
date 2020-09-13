@@ -12,50 +12,74 @@ typedef gsl::span<uint8_t, 2048> LegacySubChunkMetas;
 typedef gsl::span<uint8_t, 32768> LegacyChunkColumnIds;
 typedef gsl::span<uint8_t, 16384> LegacyChunkColumnMetas;
 
-#define LOOP(GET_INDEX) \
-	const uint8_t * idArray = idSpan.data(); \
-	const uint8_t * metaArray = metaSpan.data(); \
-	bool seen[4096] = {}; \
-	unsigned short id1Idx, id2Idx, metaIdx; \
-	unsigned short unique = 0; \
-	for (auto x = 0; x < 16; ++x) { \
-		for (auto z = 0; z < 16; ++z) { \
-			for (auto y = 0; y < 8; ++y) { \
-				GET_INDEX \
-				uint8_t metaByte = metaArray[metaIdx]; \
-				unsigned short id1 = (idArray[id1Idx] << 4) | (metaByte & 0xf); \
-				unsigned short id2 = (idArray[id2Idx] << 4) | ((metaByte >> 4) & 0xf); \
-				if(!seen[id1]){ \
-					seen[id1] = true; \
-					unique++; \
-				} \
-				if(!seen[id2]){ \
-					seen[id2] = true; \
-					unique++; \
-				} \
-			} \
-		} \
-	} \
-	new(result) BlockArrayContainer<Block>(unique); \
-	for (auto x = 0; x < 16; ++x) { \
-		for (auto z = 0; z < 16; ++z) { \
-			for (auto y = 0; y < 8; ++y) { \
-				GET_INDEX \
-				uint8_t metaByte = metaArray[metaIdx]; \
-				result->set(x, y << 1, z, mapper(idArray[id1Idx], (metaByte & 0xf))); \
-				result->set(x, (y << 1) | 1, z, mapper(idArray[id2Idx], ((metaByte >> 4) & 0xf))); \
-			} \
-		} \
-	} \
-	result->setGarbageCollected(); \
+template<
+	typename Block,
+	typename getIndexArg,
+	void (*getIndex)(
+		int x,
+		int y,
+		int z,
+		unsigned short &id1Idx,
+		unsigned short &id2Idx,
+		unsigned short &metaIdx,
+		getIndexArg extraArg
+		),
+	Block(*mapper)(uint8_t id, uint8_t meta)
+>
+static inline void convert(BlockArrayContainer<Block> * result, const gsl::span<uint8_t> &idSpan, const gsl::span<uint8_t> &metaSpan, getIndexArg extraArg) {
+	const uint8_t * idArray = idSpan.data();
+	const uint8_t * metaArray = metaSpan.data();
+	bool seen[4096] = {};
+	unsigned short id1Idx, id2Idx, metaIdx;
+	unsigned short unique = 0;
+	for (auto x = 0; x < 16; ++x) {
+		for (auto z = 0; z < 16; ++z) {
+			for (auto y = 0; y < 8; ++y) {
+				getIndex(x, y, z, id1Idx, id2Idx, metaIdx, extraArg);
 
-template<typename Block, Block (*mapper)(uint8_t id, uint8_t meta)>
+				uint8_t metaByte = metaArray[metaIdx];
+				unsigned short id1 = (idArray[id1Idx] << 4) | (metaByte & 0xf);
+				unsigned short id2 = (idArray[id2Idx] << 4) | ((metaByte >> 4) & 0xf);
+				if (!seen[id1]) {
+
+					seen[id1] = true;
+					unique++;
+				}
+				if (!seen[id2]) {
+
+					seen[id2] = true;
+					unique++;
+				}
+			}
+		}
+	}
+
+	new(result) BlockArrayContainer<Block>(unique);
+	for (auto x = 0; x < 16; ++x) {
+		for (auto z = 0; z < 16; ++z) {
+			for (auto y = 0; y < 8; ++y) {
+				getIndex(x, y, z, id1Idx, id2Idx, metaIdx, extraArg);
+
+				uint8_t metaByte = metaArray[metaIdx];
+				result->set(x, y << 1, z, mapper(idArray[id1Idx], (metaByte & 0xf)));
+				result->set(x, (y << 1) | 1, z, mapper(idArray[id2Idx], ((metaByte >> 4) & 0xf)));
+			}
+		}
+	}
+	result->setGarbageCollected();
+}
+
+static inline void getIndexSubChunkXZY(int x, int y, int z, unsigned short &id1Idx, unsigned short &id2Idx, unsigned short &metaIdx, int unused) {
+	(void)unused;
+
+	id1Idx = (x << 8) | (z << 4) | (y << 1);
+	id2Idx = id1Idx | 1;
+	metaIdx = id1Idx >> 1;
+}
+
+template<typename Block, Block(*mapper)(uint8_t id, uint8_t meta)>
 void convertSubChunkXZY(BlockArrayContainer<Block> * result, const LegacySubChunkIds &idSpan, const LegacySubChunkMetas &metaSpan) {
-	LOOP(
-		id1Idx = (x << 8) | (z << 4) | (y << 1);
-		id2Idx = id1Idx | 1;
-		metaIdx = id1Idx >> 1;
-	)
+	convert<Block, int, getIndexSubChunkXZY, mapper>(result, idSpan, metaSpan, 0);
 }
 
 static inline void rotateByteArray(const LegacySubChunkIds &byteArray, const LegacySubChunkIds &resultArray) {
@@ -102,13 +126,15 @@ void convertSubChunkYZX(BlockArrayContainer<Block> * result, const LegacySubChun
 	convertSubChunkXZY<Block, mapper>(result, rotatedIds, rotatedMetas);
 }
 
+static inline void getIndexLegacyColumnXZY(int x, int y, int z, unsigned short &id1Idx, unsigned short &id2Idx, unsigned short &metaIdx, uint8_t yOffset) {
+	id1Idx = (x << 11) | (z << 7) | (yOffset << 4) | (y << 1);
+	id2Idx = id1Idx | 1;
+	metaIdx = id1Idx >> 1;
+}
+
 template<typename Block, Block(*mapper)(uint8_t id, uint8_t meta)>
 void convertSubChunkFromLegacyColumn(BlockArrayContainer<Block> * result, const LegacyChunkColumnIds &idSpan, const LegacyChunkColumnMetas &metaSpan, const uint8_t yOffset) {
-	LOOP(
-		id1Idx = (x << 11) | (z << 7) | (yOffset << 4) | (y << 1);
-		id2Idx = id1Idx | 1;
-		metaIdx = id1Idx >> 1;
-	)
+	convert<Block, uint8_t, getIndexLegacyColumnXZY, mapper>(result, idSpan, metaSpan, yOffset);
 }
 
 #endif
