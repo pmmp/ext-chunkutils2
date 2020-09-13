@@ -49,8 +49,8 @@ typedef gsl::span<uint8_t, 16384> LegacyChunkColumnMetas;
 	} \
 	result->setGarbageCollected(); \
 
-template<typename Block>
-void convertSubChunkXZY(BlockArrayContainer<Block> * result, const LegacySubChunkIds &idSpan, const LegacySubChunkMetas &metaSpan, const std::function<Block(uint8_t id, uint8_t meta)> mapper) {
+template<typename Block, Block (*mapper)(uint8_t id, uint8_t meta)>
+void convertSubChunkXZY(BlockArrayContainer<Block> * result, const LegacySubChunkIds &idSpan, const LegacySubChunkMetas &metaSpan) {
 	LOOP(
 		id1Idx = (x << 8) | (z << 4) | (y << 1);
 		id2Idx = id1Idx | 1;
@@ -90,8 +90,8 @@ static inline void rotateNibbleArray(const LegacySubChunkMetas &nibbleArray, con
 	}
 }
 
-template<typename Block>
-void convertSubChunkYZX(BlockArrayContainer<Block> * result, const LegacySubChunkIds &idSpan, const LegacySubChunkMetas &metaSpan, const std::function<Block(uint8_t id, uint8_t meta)> mapper) {
+template<typename Block, Block(*mapper)(uint8_t id, uint8_t meta)>
+void convertSubChunkYZX(BlockArrayContainer<Block> * result, const LegacySubChunkIds &idSpan, const LegacySubChunkMetas &metaSpan) {
 	uint8_t rotatedByteArray[4096];
 	uint8_t rotatedNibbleArray[2048];
 	LegacySubChunkIds rotatedIds(rotatedByteArray);
@@ -99,11 +99,11 @@ void convertSubChunkYZX(BlockArrayContainer<Block> * result, const LegacySubChun
 
 	rotateByteArray(idSpan, rotatedIds);
 	rotateNibbleArray(metaSpan, rotatedMetas);
-	convertSubChunkXZY<Block>(result, rotatedIds, rotatedMetas, mapper);
+	convertSubChunkXZY<Block, mapper>(result, rotatedIds, rotatedMetas);
 }
 
-template<typename Block>
-void convertSubChunkFromLegacyColumn(BlockArrayContainer<Block> * result, const LegacyChunkColumnIds &idSpan, const LegacyChunkColumnMetas &metaSpan, const uint8_t yOffset, const std::function<Block(uint8_t id, uint8_t meta)> mapper) {
+template<typename Block, Block(*mapper)(uint8_t id, uint8_t meta)>
+void convertSubChunkFromLegacyColumn(BlockArrayContainer<Block> * result, const LegacyChunkColumnIds &idSpan, const LegacyChunkColumnMetas &metaSpan, const uint8_t yOffset) {
 	LOOP(
 		id1Idx = (x << 11) | (z << 7) | (yOffset << 4) | (y << 1);
 		id2Idx = id1Idx | 1;

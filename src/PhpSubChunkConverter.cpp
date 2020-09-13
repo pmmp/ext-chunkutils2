@@ -35,7 +35,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkXZY) {
 	try {
 		LegacySubChunkIds idSpan((uint8_t *)ZSTR_VAL(idArray), (uint8_t *)(ZSTR_VAL(idArray) + ZSTR_LEN(idArray)));
 		LegacySubChunkMetas metaSpan((uint8_t *)ZSTR_VAL(metaArray), (uint8_t *)(ZSTR_VAL(metaArray) + ZSTR_LEN(metaArray)));
-		convertSubChunkXZY<Block>(&intern->container, idSpan, metaSpan, flattenData);
+		convertSubChunkXZY<Block, &flattenData>(&intern->container, idSpan, metaSpan);
 	}
 	catch (gsl::fail_fast &e) {
 		zval_ptr_dtor(return_value);
@@ -62,7 +62,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkYZX) {
 	try {
 		LegacySubChunkIds idSpan((uint8_t *)ZSTR_VAL(idArray), (uint8_t *)(ZSTR_VAL(idArray) + ZSTR_LEN(idArray)));
 		LegacySubChunkMetas metaSpan((uint8_t *)ZSTR_VAL(metaArray), (uint8_t *)(ZSTR_VAL(metaArray) + ZSTR_LEN(metaArray)));
-		convertSubChunkYZX<Block>(&intern->container, idSpan, metaSpan, flattenData);
+		convertSubChunkYZX<Block, &flattenData>(&intern->container, idSpan, metaSpan);
 	}
 	catch (gsl::fail_fast &e) {
 		zval_ptr_dtor(return_value);
@@ -98,7 +98,7 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
 		LegacyChunkColumnMetas metaSpan((uint8_t *)ZSTR_VAL(metaArray), (uint8_t *)(ZSTR_VAL(metaArray) + ZSTR_LEN(metaArray)));
 
 		//TODO: check for valid Y offset
-		convertSubChunkFromLegacyColumn<Block>(&intern->container, idSpan, metaSpan, (uint8_t)yOffset, flattenData);
+		convertSubChunkFromLegacyColumn<Block, &flattenData>(&intern->container, idSpan, metaSpan, (uint8_t)yOffset);
 	}
 	catch (gsl::fail_fast &e) {
 		zval_ptr_dtor(return_value);
