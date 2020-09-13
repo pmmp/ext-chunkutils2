@@ -24,7 +24,8 @@ template<
 		unsigned short &metaIdx,
 		getIndexArg extraArg
 		),
-	Block(*mapper)(uint8_t id, uint8_t meta)
+	Block(*mapper)(uint8_t id, uint8_t meta),
+	void(*swapCoordinates)(const int x, const int y, const int z, int &rX, int &rY, int &rZ)
 >
 static inline void convert(BlockArrayContainer<Block> * result, const gsl::span<uint8_t> &idSpan, const gsl::span<uint8_t> &metaSpan, getIndexArg extraArg) {
 	const uint8_t * idArray = idSpan.data();
@@ -55,14 +56,20 @@ static inline void convert(BlockArrayContainer<Block> * result, const gsl::span<
 	}
 
 	new(result) BlockArrayContainer<Block>(unique);
+
+	int rX, rY, rZ;
 	for (auto x = 0; x < 16; ++x) {
 		for (auto z = 0; z < 16; ++z) {
 			for (auto y = 0; y < 8; ++y) {
 				getIndex(x, y, z, id1Idx, id2Idx, metaIdx, extraArg);
 
 				uint8_t metaByte = metaArray[metaIdx];
-				result->set(x, y << 1, z, mapper(idArray[id1Idx], (metaByte & 0xf)));
-				result->set(x, (y << 1) | 1, z, mapper(idArray[id2Idx], ((metaByte >> 4) & 0xf)));
+
+				swapCoordinates(x, y << 1, z, rX, rY, rZ);
+				result->set(rX, rY, rZ, mapper(idArray[id1Idx], (metaByte & 0xf)));
+
+				swapCoordinates(x, (y << 1) | 1, z, rX, rY, rZ);
+				result->set(rX, rY, rZ, mapper(idArray[id2Idx], ((metaByte >> 4) & 0xf)));
 			}
 		}
 	}
@@ -77,53 +84,26 @@ static inline void getIndexSubChunkXZY(int x, int y, int z, unsigned short &id1I
 	metaIdx = id1Idx >> 1;
 }
 
+static inline void swapCoordinatesNoOp(int x, int y, int z, int &rX, int &rY, int &rZ) {
+	rX = x;
+	rY = y;
+	rZ = z;
+}
+
 template<typename Block, Block(*mapper)(uint8_t id, uint8_t meta)>
 void convertSubChunkXZY(BlockArrayContainer<Block> * result, const LegacySubChunkIds &idSpan, const LegacySubChunkMetas &metaSpan) {
-	convert<Block, int, getIndexSubChunkXZY, mapper>(result, idSpan, metaSpan, 0);
+	convert<Block, int, getIndexSubChunkXZY, mapper, swapCoordinatesNoOp>(result, idSpan, metaSpan, 0);
 }
 
-static inline void rotateByteArray(const LegacySubChunkIds &byteArray, const LegacySubChunkIds &resultArray) {
-	const auto data = byteArray.data();
-	auto result = resultArray.data();
-	for (auto y = 0; y < 16; ++y) {
-		for (auto z = 0; z < 16; ++z) {
-			for (auto x = 0; x < 16; ++x) {
-				result[(x << 8) | (z << 4) | y] = data[(y << 8) | (z << 4) | x];
-			}
-		}
-	}
-}
-
-static inline void rotateNibbleArray(const LegacySubChunkMetas &nibbleArray, const LegacySubChunkMetas &resultArray) {
-	const auto data = nibbleArray.data();
-	auto result = resultArray.data();
-	auto i = 0;
-	for (auto x = 0; x < 8; x++) {
-		for (auto z = 0; z < 16; z++) {
-			auto zx = ((z << 3) | x);
-			for (auto y = 0; y < 8; y++) {
-				uint8_t byte1 = data[(y << 8) | zx];
-				uint8_t byte2 = data[(y << 8) | zx | 0x80];
-
-				result[i] = ((byte2 << 4) | (byte1 & 0x0f));
-				result[i | 0x80] = ((byte1 >> 4) | (byte2 & 0xf0));
-				i++;
-			}
-		}
-		i += 128;
-	}
+static inline void swapCoordinatesFromYZX(int x, int y, int z, int& rX, int& rY, int& rZ) {
+	rX = y; //yes, this is intended!
+	rY = x; //yes, this is also intended!
+	rZ = z;
 }
 
 template<typename Block, Block(*mapper)(uint8_t id, uint8_t meta)>
 void convertSubChunkYZX(BlockArrayContainer<Block> * result, const LegacySubChunkIds &idSpan, const LegacySubChunkMetas &metaSpan) {
-	uint8_t rotatedByteArray[4096];
-	uint8_t rotatedNibbleArray[2048];
-	LegacySubChunkIds rotatedIds(rotatedByteArray);
-	LegacySubChunkMetas rotatedMetas(rotatedNibbleArray);
-
-	rotateByteArray(idSpan, rotatedIds);
-	rotateNibbleArray(metaSpan, rotatedMetas);
-	convertSubChunkXZY<Block, mapper>(result, rotatedIds, rotatedMetas);
+	convert<Block, int, getIndexSubChunkXZY, mapper, swapCoordinatesFromYZX>(result, idSpan, metaSpan, 0);
 }
 
 static inline void getIndexLegacyColumnXZY(int x, int y, int z, unsigned short &id1Idx, unsigned short &id2Idx, unsigned short &metaIdx, uint8_t yOffset) {
@@ -134,7 +114,7 @@ static inline void getIndexLegacyColumnXZY(int x, int y, int z, unsigned short &
 
 template<typename Block, Block(*mapper)(uint8_t id, uint8_t meta)>
 void convertSubChunkFromLegacyColumn(BlockArrayContainer<Block> * result, const LegacyChunkColumnIds &idSpan, const LegacyChunkColumnMetas &metaSpan, const uint8_t yOffset) {
-	convert<Block, uint8_t, getIndexLegacyColumnXZY, mapper>(result, idSpan, metaSpan, yOffset);
+	convert<Block, uint8_t, getIndexLegacyColumnXZY, mapper, swapCoordinatesNoOp>(result, idSpan, metaSpan, yOffset);
 }
 
 #endif
