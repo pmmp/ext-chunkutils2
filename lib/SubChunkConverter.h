@@ -47,6 +47,7 @@ typedef gsl::span<uint8_t, 16384> LegacyChunkColumnMetas;
 			} \
 		} \
 	} \
+	result->setGarbageCollected(); \
 
 template<typename Block>
 void convertSubChunkXZY(BlockArrayContainer<Block> * result, const LegacySubChunkIds &idSpan, const LegacySubChunkMetas &metaSpan, const std::function<Block(uint8_t id, uint8_t meta)> mapper) {

@@ -169,6 +169,11 @@ public:
 			blockArray->setGarbageCollected();
 		}
 	}
+
+	// Bypass GC and flag the array as garbage-collected. Useful in bulk writes such as external conversion.
+	void setGarbageCollected() {
+		blockArray->setGarbageCollected();
+	}
 };
 
 #endif
