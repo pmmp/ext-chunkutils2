@@ -105,7 +105,7 @@ public:
 	void specializeForArraySize(Visited& v) {
 #define TRY_CAST_TO(size) \
 		if (auto casted = dynamic_cast<PalettedBlockArray<size, Block>*>(blockArray)){ \
-			v.visit<size>(*casted); \
+			v.template visit<size>(*casted); \
 			return; \
 		}
 
