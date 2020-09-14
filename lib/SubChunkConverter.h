@@ -110,7 +110,7 @@ static inline void convert(BlockArrayContainer<Block> * result, const gsl::span<
 	new(result) BlockArrayContainer<Block>(unique);
 
 	ConverterVisited<Block, getIndexArg, getIndex, mapper, swapCoordinates> converter(idArray, metaArray, extraArg);
-	result->specializeForArraySize(converter);
+	result->specializeForArraySize<void>(converter);
 	result->setGarbageCollected();
 }
 

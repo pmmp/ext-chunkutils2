@@ -101,12 +101,11 @@ public:
 	}
 
 	// A godawful hack to avoid thousands of virtual calls during conversion and other things.
-	template<typename Visited>
-	void specializeForArraySize(Visited& v) {
+	template<typename ReturnType, typename Visited>
+	ReturnType specializeForArraySize(Visited& v) {
 #define TRY_CAST_TO(size) \
 		if (auto casted = dynamic_cast<PalettedBlockArray<size, Block>*>(blockArray)){ \
-			v.template visit<size>(*casted); \
-			return; \
+			return v.template visit<size>(*casted); \
 		}
 
 		TRY_CAST_TO(1)
