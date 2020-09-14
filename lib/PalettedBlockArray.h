@@ -61,7 +61,7 @@ public:
 };
 
 template <uint8_t BITS_PER_BLOCK, typename Block>
-class PalettedBlockArray : public IPalettedBlockArray<Block> {
+class PalettedBlockArray final : public IPalettedBlockArray<Block> {
 private:
 	using Base = IPalettedBlockArray<Block>;
 	using Word = typename Base::Word;
@@ -187,7 +187,7 @@ public:
 		return palette[offset];
 	}
 
-	bool setNonVirtual(unsigned char x, unsigned char y, unsigned char z, Block val) {
+	bool set(unsigned char x, unsigned char y, unsigned char z, Block val) {
 		//TODO (suggested by sandertv): check performance when recording last written block and palette offset - might improve performance for repetetive writes
 
 		short offset = -1;
@@ -209,10 +209,6 @@ public:
 		_setPaletteOffset(x, y, z, offset);
 		this->mayNeedGC = true;
 		return true;
-	}
-
-	bool set(unsigned char x, unsigned char y, unsigned char z, Block val) {
-		return setNonVirtual(x, y, z, val);
 	}
 
 	unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {

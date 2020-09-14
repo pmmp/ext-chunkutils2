@@ -58,10 +58,10 @@ public:
 					uint8_t metaByte = metaArray[metaIdx];
 
 					swapCoordinates(x, y << 1, z, rX, rY, rZ);
-					blockArray.setNonVirtual(rX, rY, rZ, mapper(idArray[id1Idx], (metaByte & 0xf)));
+					blockArray.set(rX, rY, rZ, mapper(idArray[id1Idx], (metaByte & 0xf)));
 
 					swapCoordinates(x, (y << 1) | 1, z, rX, rY, rZ);
-					blockArray.setNonVirtual(rX, rY, rZ, mapper(idArray[id2Idx], ((metaByte >> 4) & 0xf)));
+					blockArray.set(rX, rY, rZ, mapper(idArray[id2Idx], ((metaByte >> 4) & 0xf)));
 				}
 			}
 		}
