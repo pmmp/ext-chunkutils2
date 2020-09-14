@@ -187,7 +187,7 @@ public:
 		return palette[offset];
 	}
 
-	bool set(unsigned char x, unsigned char y, unsigned char z, Block val) {
+	bool setNonVirtual(unsigned char x, unsigned char y, unsigned char z, Block val) {
 		//TODO (suggested by sandertv): check performance when recording last written block and palette offset - might improve performance for repetetive writes
 
 		short offset = -1;
@@ -209,6 +209,10 @@ public:
 		_setPaletteOffset(x, y, z, offset);
 		this->mayNeedGC = true;
 		return true;
+	}
+
+	bool set(unsigned char x, unsigned char y, unsigned char z, Block val) {
+		return setNonVirtual(x, y, z, val);
 	}
 
 	unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {

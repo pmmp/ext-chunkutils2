@@ -12,20 +12,72 @@ typedef gsl::span<uint8_t, 2048> LegacySubChunkMetas;
 typedef gsl::span<uint8_t, 32768> LegacyChunkColumnIds;
 typedef gsl::span<uint8_t, 16384> LegacyChunkColumnMetas;
 
+template<typename getIndexArg>
+using getIndexFunc = void(*)(
+	int x,
+	int y,
+	int z,
+	unsigned short& id1Idx,
+	unsigned short& id2Idx,
+	unsigned short& metaIdx,
+	getIndexArg extraArg
+);
+template<typename Block>
+using mapperFunc = Block(*)(uint8_t id, uint8_t meta);
+
+using coordinateSwapFunc = void(*)(const int x, const int y, const int z, int& rX, int& rY, int& rZ);
+
 template<
 	typename Block,
 	typename getIndexArg,
-	void (*getIndex)(
-		int x,
-		int y,
-		int z,
-		unsigned short &id1Idx,
-		unsigned short &id2Idx,
-		unsigned short &metaIdx,
-		getIndexArg extraArg
-		),
-	Block(*mapper)(uint8_t id, uint8_t meta),
-	void(*swapCoordinates)(const int x, const int y, const int z, int &rX, int &rY, int &rZ)
+	getIndexFunc<getIndexArg> getIndex,
+	mapperFunc<Block> mapper,
+	coordinateSwapFunc swapCoordinates
+>
+class ConverterVisited {
+private:
+	const getIndexArg extraArg;
+	const uint8_t * idArray;
+	const uint8_t * metaArray;
+
+public:
+	ConverterVisited(const uint8_t * idSpan, const uint8_t * metaSpan, getIndexArg extraArg) :
+		idArray(idSpan),
+		metaArray(metaSpan),
+		extraArg(extraArg) {}
+
+	template<uint8_t BITS_PER_BLOCK>
+	void visit(PalettedBlockArray<BITS_PER_BLOCK, Block>& blockArray) {
+		unsigned short id1Idx, id2Idx, metaIdx;
+		int rX, rY, rZ;
+		for (auto x = 0; x < 16; ++x) {
+			for (auto z = 0; z < 16; ++z) {
+				for (auto y = 0; y < 8; ++y) {
+					getIndex(x, y, z, id1Idx, id2Idx, metaIdx, extraArg);
+
+					uint8_t metaByte = metaArray[metaIdx];
+
+					swapCoordinates(x, y << 1, z, rX, rY, rZ);
+					blockArray.setNonVirtual(rX, rY, rZ, mapper(idArray[id1Idx], (metaByte & 0xf)));
+
+					swapCoordinates(x, (y << 1) | 1, z, rX, rY, rZ);
+					blockArray.setNonVirtual(rX, rY, rZ, mapper(idArray[id2Idx], ((metaByte >> 4) & 0xf)));
+				}
+			}
+		}
+	}
+
+	void visit(IPalettedBlockArray<Block>& blockArray) {
+		throw std::invalid_argument("unknown block array size");
+	}
+};
+
+template<
+	typename Block,
+	typename getIndexArg,
+	getIndexFunc<getIndexArg> getIndex,
+	mapperFunc<Block> mapper,
+	coordinateSwapFunc swapCoordinates
 >
 static inline void convert(BlockArrayContainer<Block> * result, const gsl::span<uint8_t> &idSpan, const gsl::span<uint8_t> &metaSpan, getIndexArg extraArg) {
 	const uint8_t * idArray = idSpan.data();
@@ -57,22 +109,8 @@ static inline void convert(BlockArrayContainer<Block> * result, const gsl::span<
 
 	new(result) BlockArrayContainer<Block>(unique);
 
-	int rX, rY, rZ;
-	for (auto x = 0; x < 16; ++x) {
-		for (auto z = 0; z < 16; ++z) {
-			for (auto y = 0; y < 8; ++y) {
-				getIndex(x, y, z, id1Idx, id2Idx, metaIdx, extraArg);
-
-				uint8_t metaByte = metaArray[metaIdx];
-
-				swapCoordinates(x, y << 1, z, rX, rY, rZ);
-				result->set(rX, rY, rZ, mapper(idArray[id1Idx], (metaByte & 0xf)));
-
-				swapCoordinates(x, (y << 1) | 1, z, rX, rY, rZ);
-				result->set(rX, rY, rZ, mapper(idArray[id2Idx], ((metaByte >> 4) & 0xf)));
-			}
-		}
-	}
+	ConverterVisited<Block, getIndexArg, getIndex, mapper, swapCoordinates> converter(idArray, metaArray, extraArg);
+	result->specializeForArraySize(converter);
 	result->setGarbageCollected();
 }
 
