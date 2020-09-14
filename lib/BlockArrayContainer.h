@@ -117,7 +117,7 @@ public:
 		TRY_CAST_TO(6)
 		TRY_CAST_TO(8)
 		TRY_CAST_TO(16)
-
+#undef TRY_CAST_TO
 		v.visit(*blockArray);
 	}
 
