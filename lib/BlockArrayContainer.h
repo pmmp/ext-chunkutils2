@@ -100,6 +100,26 @@ public:
 		delete blockArray;
 	}
 
+	// A godawful hack to avoid thousands of virtual calls during conversion and other things.
+	template<typename ReturnType, typename Visited>
+	ReturnType specializeForArraySize(Visited& v) {
+#define TRY_CAST_TO(size) \
+		if (auto casted = dynamic_cast<PalettedBlockArray<size, Block>*>(blockArray)){ \
+			return v.template visit<size>(*casted); \
+		}
+
+		TRY_CAST_TO(1)
+		TRY_CAST_TO(2)
+		TRY_CAST_TO(3)
+		TRY_CAST_TO(4)
+		TRY_CAST_TO(5)
+		TRY_CAST_TO(6)
+		TRY_CAST_TO(8)
+		TRY_CAST_TO(16)
+#undef TRY_CAST_TO
+		v.visit(*blockArray);
+	}
+
 	const gsl::span<const char> getWordArray() const {
 		return blockArray->getWordArray();
 	}

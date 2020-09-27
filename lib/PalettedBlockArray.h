@@ -61,7 +61,7 @@ public:
 };
 
 template <uint8_t BITS_PER_BLOCK, typename Block>
-class PalettedBlockArray : public IPalettedBlockArray<Block> {
+class PalettedBlockArray final : public IPalettedBlockArray<Block> {
 private:
 	using Base = IPalettedBlockArray<Block>;
 	using Word = typename Base::Word;
