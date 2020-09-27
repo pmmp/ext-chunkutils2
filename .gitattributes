@@ -2,3 +2,4 @@
 *.c text
 *.cpp text
 *.h text
+/gsl/tests/* -text
