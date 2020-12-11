@@ -1,6 +1,6 @@
 # ext-chunkutils2
 
-[![Build Status](https://travis-ci.com/pmmp/ext-chunkutils2.svg?branch=master)](https://travis-ci.com/pmmp/ext-chunkutils2)
+![CI](https://github.com/pmmp/ext-chunkutils2/workflows/CI/badge.svg)
 
 PHP extension prototype written in C++ implementing the new MCPE 1.2.13 subchunk format
 
