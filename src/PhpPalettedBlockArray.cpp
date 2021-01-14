@@ -61,7 +61,7 @@ static bool paletted_block_array_from_data(zval *return_value, zend_long bitsPer
 	}
 	catch (std::exception& e) {
 		zval_ptr_dtor(return_value);
-		zend_throw_exception_ex(spl_ce_RuntimeException, 0, e.what());
+		zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%s", e.what());
 		return false;
 	}
 }
@@ -219,7 +219,7 @@ PHP_METHOD(PhpPalettedBlockArray, __construct) {
 		new(&intern->container) NormalBlockArrayContainer((Block)fillEntry);
 	}
 	catch (std::exception& e) {
-		zend_throw_exception_ex(spl_ce_RuntimeException, 0, e.what());
+		zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%s", e.what());
 	}
 }
 
@@ -398,7 +398,7 @@ PHP_METHOD(PhpPalettedBlockArray, getExpectedWordArraySize) {
 		RETURN_LONG((zend_long)NormalBlockArrayContainer::getExpectedPayloadSize(casted));
 	}
 	catch (std::invalid_argument &e) {
-		zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, e.what());
+		zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "%s", e.what());
 	}
 }
 
