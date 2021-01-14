@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: PHP ${{ matrix.php }} (ZTS)
+    name: PHP ${{ matrix.php }} (ZTS) Zend MM ${{ matrix.zend-alloc }}
     runs-on: ubuntu-18.04
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
 
@@ -15,6 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         php: ['7.2.34', '7.3.26', '7.4.14']
+        zend-alloc: [0, 1]
     env:
       CFLAGS: "-march=x86-64"
       CXXFLAGS: "-march=x86-64"
@@ -50,4 +51,4 @@ jobs:
           make install
 
       - name: Run .phpt tests
-        run: REPORT_EXIT_STATUS=1 NO_INTERACTION=1 TEST_PHP_ARGS="--show-diff" make test
+        run: USE_ZEND_ALLOC=${{ matrix.zend-alloc }} REPORT_EXIT_STATUS=1 NO_INTERACTION=1 TEST_PHP_ARGS="--show-diff" make test
