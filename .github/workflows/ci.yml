@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.2.34', '7.3.26', '7.4.14']
+        php: ['7.2.34', '7.3.26', '7.4.14', '8.0.1']
         zend-alloc: [0, 1]
     env:
       CFLAGS: "-march=x86-64"

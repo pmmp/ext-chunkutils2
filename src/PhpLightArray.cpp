@@ -27,9 +27,9 @@ static zend_object* light_array_new(zend_class_entry* class_type) {
 	return &object->std;
 }
 
-static zend_object* light_array_clone(zval* object) {
-	light_array_obj* old_object = fetch_from_zend_object<light_array_obj>(Z_OBJ_P(object));
-	light_array_obj* new_object = fetch_from_zend_object<light_array_obj>(light_array_new(Z_OBJCE_P(object)));
+static zend_object* light_array_clone(chunkutils2_handler_context* object) {
+	light_array_obj* old_object = fetch_from_zend_object<light_array_obj>(Z_OBJ_FROM_HANDLER_CONTEXT(object));
+	light_array_obj* new_object = fetch_from_zend_object<light_array_obj>(light_array_new(Z_OBJ_FROM_HANDLER_CONTEXT(object)->ce));
 	new_object->lightArray = old_object->lightArray; //this calls the copy assignment operator
 
 	zend_objects_clone_members(&new_object->std, &old_object->std); //copy user-assigned properties
