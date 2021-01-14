@@ -30,7 +30,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: php-build/php-build
-          ref: 5a3d184ed9b817ffe8e405a3475eca7652a9ec8c
+          ref: 09e8c54eb47678415e1315ac8fab7f1403e9caff
           path: php-build
 
       - name: Compile PHP
