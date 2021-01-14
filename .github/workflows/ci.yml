@@ -51,4 +51,4 @@ jobs:
           make install
 
       - name: Run .phpt tests
-        run: USE_ZEND_ALLOC=${{ matrix.zend-alloc }} REPORT_EXIT_STATUS=1 NO_INTERACTION=1 TEST_PHP_ARGS="--show-diff" make test
+        run: USE_ZEND_ALLOC=${{ matrix.zend-alloc }} REPORT_EXIT_STATUS=1 NO_INTERACTION=1 TEST_PHP_ARGS="-m --show-diff" make test
