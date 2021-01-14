@@ -301,7 +301,7 @@ PHP_METHOD(PhpPalettedBlockArray, get) {
 	ZEND_PARSE_PARAMETERS_END();
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
-	RETURN_LONG(intern->container.get(x, y, z))
+	RETURN_LONG(intern->container.get(x, y, z));
 }
 
 
