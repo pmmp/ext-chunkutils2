@@ -14,7 +14,9 @@ jobs:
     strategy:
       matrix:
         php: ['7.2.34', '7.3.26', '7.4.14']
-
+    env:
+      CFLAGS: "-march=x86-64"
+      CXXFLAGS: "-march=x86-64"
     steps:
       - uses: actions/checkout@v2
 
@@ -23,7 +25,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}/php
-          key: php-build-${{ matrix.php }}
+          key: php-build-${{ matrix.php }}-
 
       - name: Clone php-build repository
         if: steps.php-build-cache.outputs.cache-hit != 'true'
