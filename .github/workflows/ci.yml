@@ -7,26 +7,46 @@ on:
 
 jobs:
   build:
+    name: PHP ${{ matrix.php }} (ZTS)
     runs-on: ubuntu-18.04
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
 
     strategy:
       matrix:
-        php: ['7.2', '7.3', '7.4']
-
+        php: ['7.2.34', '7.3.26', '7.4.14']
+    env:
+      CFLAGS: "-march=x86-64"
+      CXXFLAGS: "-march=x86-64"
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@2.9.0
+      - name: Restore PHP build cache
+        id: php-build-cache
+        uses: actions/cache@v2
         with:
-          php-version: "${{ matrix.php }}"
+          path: ${{ github.workspace }}/php
+          key: php-build-${{ matrix.php }}-
+
+      - name: Clone php-build repository
+        if: steps.php-build-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: php-build/php-build
+          ref: 09e8c54eb47678415e1315ac8fab7f1403e9caff
+          path: php-build
+
+      - name: Compile PHP
+        if: steps.php-build-cache.outputs.cache-hit != 'true'
+        run: |
+          cd $GITHUB_WORKSPACE/php-build
+          ./install-dependencies.sh
+          PHP_BUILD_ZTS_ENABLE=on ./bin/php-build ${{ matrix.php }} $GITHUB_WORKSPACE/php
 
       - name: Build extension
         run: |
-          phpize
-          ./configure
-          make
+          $GITHUB_WORKSPACE/php/bin/phpize
+          ./configure --with-php-config=$GITHUB_WORKSPACE/php/bin/php-config
+          make install
 
       - name: Run .phpt tests
         run: REPORT_EXIT_STATUS=1 NO_INTERACTION=1 TEST_PHP_ARGS="--show-diff" make test
