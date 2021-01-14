@@ -38,7 +38,6 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkXZY) {
 		convertSubChunkXZY<Block, &flattenData>(&intern->container, idSpan, metaSpan);
 	}
 	catch (gsl::fail_fast &e) {
-		zval_ptr_dtor(return_value);
 		zend_throw_exception_ex(spl_ce_LengthException, 0, "Invalid data sizes (got %zu and %zu)", ZSTR_LEN(idArray), ZSTR_LEN(metaArray));
 		return;
 	}
@@ -65,7 +64,6 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkYZX) {
 		convertSubChunkYZX<Block, &flattenData>(&intern->container, idSpan, metaSpan);
 	}
 	catch (gsl::fail_fast &e) {
-		zval_ptr_dtor(return_value);
 		zend_throw_exception_ex(spl_ce_LengthException, 0, "Invalid data sizes (got %zu and %zu)", ZSTR_LEN(idArray), ZSTR_LEN(metaArray));
 		return;
 	}
@@ -101,7 +99,6 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
 		convertSubChunkFromLegacyColumn<Block, &flattenData>(&intern->container, idSpan, metaSpan, (uint8_t)yOffset);
 	}
 	catch (gsl::fail_fast &e) {
-		zval_ptr_dtor(return_value);
 		zend_throw_exception_ex(spl_ce_LengthException, 0, "Invalid data sizes (got %zu and %zu)", ZSTR_LEN(idArray), ZSTR_LEN(metaArray));
 		return;
 	}

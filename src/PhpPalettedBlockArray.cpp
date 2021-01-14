@@ -48,7 +48,6 @@ static bool paletted_block_array_from_data(zval *return_value, zend_long bitsPer
 		) {
 
 		if (!checkPaletteEntrySize(Z_LVAL_P(current))) {
-			zval_ptr_dtor(return_value);
 			return false;
 		}
 		b = (Block)Z_LVAL_P(current);
@@ -60,7 +59,6 @@ static bool paletted_block_array_from_data(zval *return_value, zend_long bitsPer
 		return true;
 	}
 	catch (std::exception& e) {
-		zval_ptr_dtor(return_value);
 		zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%s", e.what());
 		return false;
 	}
