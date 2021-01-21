@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/pmmp/ext-chunkutils2/workflows/CI/badge.svg)
 
-PHP extension prototype written in C++ implementing the new MCPE 1.2.13 subchunk format
+PHP extension written in C++ implementing the new MCPE 1.2.13 subchunk format
 
 ## What is this?
 This extension implements some performance-sensitive components of PocketMine-MP's internal chunk handling system in C++ for better performance and lower memory usage.
