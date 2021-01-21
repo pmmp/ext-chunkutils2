@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: PHP ${{ matrix.php }} (ZTS) Zend MM ${{ matrix.zend-alloc }}
+    name: PHP ${{ matrix.php }} (ZTS) Valgrind ${{ matrix.valgrind }}
     runs-on: ubuntu-18.04
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
 
@@ -15,19 +15,24 @@ jobs:
       fail-fast: false
       matrix:
         php: ['7.2.34', '7.3.26', '7.4.14', '8.0.1']
-        zend-alloc: [0, 1]
+        valgrind: [0, 1]
+
     env:
       CFLAGS: "-march=x86-64"
       CXXFLAGS: "-march=x86-64"
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install Valgrind
+        if: matrix.valgrind == '1'
+        run: sudo apt-get update && sudo apt-get install valgrind
+
       - name: Restore PHP build cache
         id: php-build-cache
         uses: actions/cache@v2
         with:
           path: ${{ github.workspace }}/php
-          key: php-build-${{ matrix.php }}-
+          key: php-build-debug-${{ matrix.php }}-
 
       - name: Clone php-build repository
         if: steps.php-build-cache.outputs.cache-hit != 'true'
@@ -42,7 +47,7 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/php-build
           ./install-dependencies.sh
-          PHP_BUILD_ZTS_ENABLE=on ./bin/php-build ${{ matrix.php }} $GITHUB_WORKSPACE/php
+          PHP_BUILD_ZTS_ENABLE=on PHP_BUILD_CONFIGURE_OPTS='--enable-debug' ./bin/php-build ${{ matrix.php }} $GITHUB_WORKSPACE/php
 
       - name: Build extension
         run: |
@@ -50,5 +55,9 @@ jobs:
           ./configure --with-php-config=$GITHUB_WORKSPACE/php/bin/php-config
           make install
 
+      - name: Add Valgrind to TEST_PHP_ARGS
+        if: matrix.valgrind == '1'
+        run: echo "TEST_PHP_ARGS=-m" >> $GITHUB_ENV
+
       - name: Run .phpt tests
-        run: USE_ZEND_ALLOC=${{ matrix.zend-alloc }} REPORT_EXIT_STATUS=1 NO_INTERACTION=1 TEST_PHP_ARGS="--show-diff" make test
+        run: REPORT_EXIT_STATUS=1 NO_INTERACTION=1 TEST_PHP_ARGS="$TEST_PHP_ARGS --show-diff" make test
