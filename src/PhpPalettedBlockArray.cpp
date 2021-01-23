@@ -101,7 +101,8 @@ static zend_object* paletted_block_array_new(zend_class_entry *class_type) {
 static zend_object* paletted_block_array_clone(chunkutils2_handler_context *object) {
 	paletted_block_array_obj *old_object = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_FROM_HANDLER_CONTEXT(object));
 	paletted_block_array_obj *new_object = fetch_from_zend_object<paletted_block_array_obj>(paletted_block_array_new(Z_OBJ_FROM_HANDLER_CONTEXT(object)->ce));
-	new_object->container = old_object->container; //this calls the copy assignment operator
+
+	new(&new_object->container) NormalBlockArrayContainer(old_object->container);
 
 	zend_objects_clone_members(&new_object->std, &old_object->std); //copy user-assigned properties
 
