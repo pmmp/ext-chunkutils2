@@ -91,6 +91,7 @@ public:
 
 	BlockArrayContainer& operator=(const BlockArrayContainer &other) {
 		if (&other != this) {
+			delete blockArray;
 			blockArray = other.blockArray->clone();
 		}
 		return *this;
