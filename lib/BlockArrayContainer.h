@@ -9,68 +9,54 @@
 
 #include "PalettedBlockArray.h"
 
+#define MACRO_PER_BITS_PER_BLOCK \
+	BPB_MACRO(1) \
+	BPB_MACRO(2) \
+	BPB_MACRO(3) \
+	BPB_MACRO(4) \
+	BPB_MACRO(5) \
+	BPB_MACRO(6) \
+	BPB_MACRO(8) \
+	BPB_MACRO(16)
+
 template<typename Block>
 class BlockArrayContainer {
 private:
 	typedef IPalettedBlockArray<Block> BlockArray;
 
 	static BlockArray *blockArrayFromData(uint8_t bitsPerBlock, gsl::span<uint8_t> &wordArray, std::vector<Block> &paletteEntries) {
-#define SWITCH_CASE(i) case i: return new PalettedBlockArray<i, Block>(wordArray, paletteEntries);
 		switch (bitsPerBlock) {
-			SWITCH_CASE(1)
-			SWITCH_CASE(2)
-			SWITCH_CASE(3)
-			SWITCH_CASE(4)
-			SWITCH_CASE(5)
-			SWITCH_CASE(6)
-			SWITCH_CASE(8)
-			SWITCH_CASE(16)
+#define BPB_MACRO(i) case i: return new PalettedBlockArray<i, Block>(wordArray, paletteEntries);
+			MACRO_PER_BITS_PER_BLOCK
+#undef BPB_MACRO
 		default:
 			throw std::runtime_error("invalid bits-per-block: " + std::to_string(bitsPerBlock));
 		}
-
-#undef SWITCH_CASE
 	}
 
 	static BlockArray *blockArrayFromCapacity(unsigned short capacity) {
-#define CONDITION(i) \
+#define BPB_MACRO(i) \
 		if (capacity <= PalettedBlockArray<i, Block>::MAX_PALETTE_SIZE) { \
 			return new PalettedBlockArray<i, Block>; \
 		}
 
-		CONDITION(1)
-		CONDITION(2)
-		CONDITION(3)
-		CONDITION(4)
-		CONDITION(5)
-		CONDITION(6)
-		CONDITION(8)
-		CONDITION(16)
+		MACRO_PER_BITS_PER_BLOCK
+#undef BPB_MACRO
 
 		throw std::invalid_argument("invalid capacity specified: " + std::to_string(capacity));
-
-#undef CONDITION
 	}
 
 	BlockArray *blockArray = nullptr;
 
 public:
 	static unsigned int getExpectedPayloadSize(uint8_t bitsPerBlock) {
-#define SWITCH_CASE(i) case i: return PalettedBlockArray<i, Block>::PAYLOAD_SIZE;
 		switch (bitsPerBlock) {
-			SWITCH_CASE(1)
-			SWITCH_CASE(2)
-			SWITCH_CASE(3)
-			SWITCH_CASE(4)
-			SWITCH_CASE(5)
-			SWITCH_CASE(6)
-			SWITCH_CASE(8)
-			SWITCH_CASE(16)
+#define BPB_MACRO(i) case i: return PalettedBlockArray<i, Block>::PAYLOAD_SIZE;
+			MACRO_PER_BITS_PER_BLOCK
+#undef BPB_MACRO
 		default:
 			throw std::invalid_argument("invalid bits-per-block: " + std::to_string(bitsPerBlock));
 		}
-
-#undef SWITCH_CASE
 	}
 
 	BlockArrayContainer(Block block) {
@@ -104,20 +90,14 @@ public:
 	// A godawful hack to avoid thousands of virtual calls during conversion and other things.
 	template<typename ReturnType, typename Visited>
 	ReturnType specializeForArraySize(Visited& v) {
-#define TRY_CAST_TO(size) \
+#define BPB_MACRO(size) \
 		if (auto casted = dynamic_cast<PalettedBlockArray<size, Block>*>(blockArray)){ \
 			return v.template visit<size>(*casted); \
 		}
 
-		TRY_CAST_TO(1)
-		TRY_CAST_TO(2)
-		TRY_CAST_TO(3)
-		TRY_CAST_TO(4)
-		TRY_CAST_TO(5)
-		TRY_CAST_TO(6)
-		TRY_CAST_TO(8)
-		TRY_CAST_TO(16)
-#undef TRY_CAST_TO
+		MACRO_PER_BITS_PER_BLOCK
+#undef BPB_MACRO
+
 		v.visit(*blockArray);
 	}
 
