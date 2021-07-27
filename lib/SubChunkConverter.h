@@ -69,6 +69,7 @@ public:
 				}
 			}
 		}
+		blockArray.setGarbageCollected();
 	}
 
 	void visit(IPalettedBlockArray<Block>& blockArray) {
@@ -119,7 +120,6 @@ static inline void convert(BlockArrayContainer<Block> * result, const gsl::span<
 
 	ConverterVisited<Block, getIndexArg, getIndex, mapper, swapCoordinates> converter(idArray, metaArray, extraArg);
 	result->template specializeForArraySize<void>(converter);
-	result->setGarbageCollected();
 }
 
 static inline void getIndexSubChunkXZY(int x, int y, int z, unsigned short &id1Idx, unsigned short &id2Idx, unsigned short &metaIdx, int unused) {
