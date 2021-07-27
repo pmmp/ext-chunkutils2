@@ -110,10 +110,6 @@ private:
 
 public:
 
-	PalettedBlockArray() {
-
-	}
-
 	PalettedBlockArray(Block block) {
 		memset(words.data(), 0, sizeof(words));
 		palette[nextPaletteIndex++] = block;

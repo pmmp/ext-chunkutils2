@@ -215,7 +215,7 @@ PHP_METHOD(PhpPalettedBlockArray, __construct) {
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
 	try {
-		new(&intern->container) NormalBlockArrayContainer((Block)fillEntry);
+		new(&intern->container) NormalBlockArrayContainer((Block)fillEntry, 0);
 	}
 	catch (std::exception& e) {
 		zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%s", e.what());

@@ -34,10 +34,10 @@ private:
 		}
 	}
 
-	static BlockArray *blockArrayFromCapacity(unsigned short capacity) {
+	static BlockArray *blockArrayFromCapacity(Block initializer, unsigned short capacity) {
 #define BPB_MACRO(i) \
 		if (capacity <= PalettedBlockArray<i, Block>::MAX_PALETTE_SIZE) { \
-			return new PalettedBlockArray<i, Block>; \
+			return new PalettedBlockArray<i, Block>(initializer); \
 		}
 
 		MACRO_PER_BITS_PER_BLOCK
@@ -59,12 +59,8 @@ public:
 		}
 	}
 
-	BlockArrayContainer(Block block) {
-		blockArray = new PalettedBlockArray<1, Block>(block);
-	}
-
-	BlockArrayContainer(unsigned short capacity) {
-		blockArray = blockArrayFromCapacity(capacity);
+	BlockArrayContainer(Block block, unsigned short capacity) {
+		blockArray = blockArrayFromCapacity(block, capacity);
 	}
 
 	BlockArrayContainer(uint8_t bitsPerBlock, gsl::span<uint8_t> &wordArray, std::vector<Block> &paletteEntries) {
@@ -128,7 +124,7 @@ public:
 				//reached max capacity and less than ARRAY_CAPACITY unique blocks in array
 				//this also automatically handles GC on chunks when there are unused palette entries in an array
 
-				BlockArray *newArray = blockArrayFromCapacity(count + 1);
+				BlockArray *newArray = blockArrayFromCapacity(val, count + 1);
 
 				newArray->fastUpsize(*blockArray);
 				newArray->set(x, y, z, val);
@@ -161,7 +157,7 @@ public:
 			auto unique = blockArray->countUniqueBlocks();
 
 			if (unique != blockArray->getPaletteSize()) {
-				BlockArray *newArray = blockArrayFromCapacity(unique + reserved);
+				BlockArray *newArray = blockArrayFromCapacity(blockArray->get(0, 0, 0), unique + reserved);
 				assert(newArray != nullptr);
 				newArray->convertFrom(*blockArray);
 				delete blockArray;

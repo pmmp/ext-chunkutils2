@@ -85,6 +85,10 @@ static inline void convert(BlockArrayContainer<Block> * result, const gsl::span<
 	bool seen[4096] = {};
 	unsigned short id1Idx, id2Idx, metaIdx;
 	unsigned short unique = 0;
+
+	getIndex(0, 0, 0, id1Idx, id2Idx, metaIdx, extraArg);
+	Block initializer = mapper(idArray[id1Idx], metaArray[metaIdx] & 0xf);
+
 	for (auto x = 0; x < 16; ++x) {
 		for (auto z = 0; z < 16; ++z) {
 			for (auto y = 0; y < 8; ++y) {
@@ -107,7 +111,7 @@ static inline void convert(BlockArrayContainer<Block> * result, const gsl::span<
 		}
 	}
 
-	new(result) BlockArrayContainer<Block>(unique);
+	new(result) BlockArrayContainer<Block>(initializer, unique);
 
 	ConverterVisited<Block, getIndexArg, getIndex, mapper, swapCoordinates> converter(idArray, metaArray, extraArg);
 	result->template specializeForArraySize<void>(converter);
