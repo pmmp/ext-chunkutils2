@@ -48,6 +48,10 @@ public:
 
 	template<uint8_t BITS_PER_BLOCK>
 	void visit(PalettedBlockArray<BITS_PER_BLOCK, Block>& blockArray) {
+		if (BITS_PER_BLOCK == 0) {
+			//NOOP - uniform arrays will already be correctly initialized during construction
+			return;
+		}
 		unsigned short id1Idx, id2Idx, metaIdx;
 		int rX, rY, rZ;
 		for (auto x = 0; x < 16; ++x) {
@@ -65,11 +69,6 @@ public:
 				}
 			}
 		}
-	}
-
-	template<>
-	void visit(PalettedBlockArray<0, Block>& blockArray) {
-		//NOOP - uniform arrays will already be correctly initialized during construction
 	}
 
 	void visit(IPalettedBlockArray<Block>& blockArray) {
