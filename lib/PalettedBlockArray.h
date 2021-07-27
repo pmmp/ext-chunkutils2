@@ -199,7 +199,7 @@ public:
 
 		if (offset == -1) {
 			if (nextPaletteIndex >= MAX_PALETTE_SIZE) {
-				if (MAX_PALETTE_SIZE < Base::ARRAY_CAPACITY || mayNeedGC) {
+				if (MAX_PALETTE_SIZE < Base::ARRAY_CAPACITY || this->mayNeedGC) {
 					return false;
 				}
 				//overwrite existing offset on fully used, non-dirty palette
