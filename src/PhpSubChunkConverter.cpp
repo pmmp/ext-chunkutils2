@@ -87,7 +87,10 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
 		Z_PARAM_LONG(yOffset)
 	ZEND_PARSE_PARAMETERS_END();
 
-
+	if (yOffset < 0 || yOffset > 7) {
+		zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "Y offset must be in range 0-7");
+		return;
+	}
 	object_init_ex(return_value, paletted_block_array_entry);
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
 
