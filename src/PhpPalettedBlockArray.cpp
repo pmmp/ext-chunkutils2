@@ -325,23 +325,6 @@ PHP_METHOD(PhpPalettedBlockArray, set) {
 	intern->container.set(x, y, z, val);
 }
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray_replace, 0, 0, 2)
-	ZEND_ARG_TYPE_INFO(0, offset, IS_LONG, 0)
-	ZEND_ARG_TYPE_INFO(0, val, IS_LONG, 0)
-ZEND_END_ARG_INFO()
-
-PHP_METHOD(PhpPalettedBlockArray, replace) {
-	zend_long offset, val;
-
-	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2)
-		Z_PARAM_LONG(offset)
-		Z_PARAM_LONG(val)
-	ZEND_PARSE_PARAMETERS_END();
-
-	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
-	intern->container.replace(offset, val);
-}
-
 ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray_replaceAll, 0, 0, 2)
 	ZEND_ARG_TYPE_INFO(0, oldVal, IS_LONG, 0)
 	ZEND_ARG_TYPE_INFO(0, newVal, IS_LONG, 0)
@@ -410,7 +393,6 @@ static zend_function_entry paletted_block_array_class_methods[] = {
 	PHP_ME(PhpPalettedBlockArray, getBitsPerBlock, arginfo_PalettedBlockArray_getBitsPerBlock, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, get, arginfo_PalettedBlockArray_get, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, set, arginfo_PalettedBlockArray_set, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpPalettedBlockArray, replace, arginfo_PalettedBlockArray_replace, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, replaceAll, arginfo_PalettedBlockArray_replaceAll, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, collectGarbage, arginfo_PalettedBlockArray_collectGarbage, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpPalettedBlockArray, getExpectedWordArraySize, arginfo_PalettedBlockArray_getExpectedWordArraySize, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)

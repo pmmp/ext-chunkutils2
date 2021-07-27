@@ -144,10 +144,6 @@ public:
 		}
 	}
 
-	void replace(unsigned short offset, Block val) {
-		blockArray->replace(offset, val);
-	}
-
 	void replaceAll(Block oldVal, Block newVal) {
 		blockArray->replaceAll(oldVal, newVal);
 	}
