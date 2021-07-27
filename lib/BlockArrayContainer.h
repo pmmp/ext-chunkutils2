@@ -112,8 +112,7 @@ public:
 		if (!blockArray->set(x, y, z, val)) {
 			unsigned short count = blockArray->getPaletteSize();
 			if (count < BlockArray::ARRAY_CAPACITY) {
-				//reached max capacity and less than ARRAY_CAPACITY unique blocks in array
-				//this also automatically handles GC on chunks when there are unused palette entries in an array
+				//palette is full, resize to larger one
 
 				BlockArray *newArray = blockArrayFromCapacity(val, count + 1);
 
@@ -121,15 +120,15 @@ public:
 				newArray->set(x, y, z, val);
 				delete blockArray;
 				blockArray = newArray;
-			} else if (blockArray->needsGarbageCollection()) {
-				//full palette but GC possible, run GC and try a second time
-				collectGarbage(false, 1);
-				set(x, y, z, val);
 			} else {
-				//full palette and GC not possible, force overwrite of existing blockstate
-				//this means there are no unused entries and this block isn't already in the palette, so GC is impossible
-				blockArray->replace(blockArray->getPaletteOffset(x, y, z), val);
-				blockArray->setGarbageCollected();
+				//largest palette size, try and ditch some entries from palette
+				collectGarbage(false, 1);
+				//after GC, one of two things should happen
+				//1) there should be a free slot in the palette for the new entry
+				//2) palette remains full (indicating every block has its own palette slot), so we overwrite the existing entry for x,y,z
+				//therefore this should never return false, since false would indicate resize/GC is needed, and we just did that.
+				auto result = blockArray->set(x, y, z, val);
+				assert(result);
 			}
 		}
 	}

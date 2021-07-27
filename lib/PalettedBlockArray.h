@@ -51,7 +51,6 @@ public:
 
 	virtual unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const = 0;
 
-	virtual void replace(unsigned short offset, Block val) = 0;
 	virtual void replaceAll(Block from, Block to) = 0;
 
 	virtual void convertFrom(const IPalettedBlockArray<Block> &otherArray) = 0;
@@ -190,6 +189,7 @@ public:
 		//TODO (suggested by sandertv): check performance when recording last written block and palette offset - might improve performance for repetetive writes
 
 		short offset = -1;
+		bool needGC = true;
 		for (short i = 0; i < nextPaletteIndex; ++i) {
 			if (palette[i] == val) {
 				offset = i;
@@ -199,27 +199,28 @@ public:
 
 		if (offset == -1) {
 			if (nextPaletteIndex >= MAX_PALETTE_SIZE) {
-				return false;
+				if (MAX_PALETTE_SIZE < Base::ARRAY_CAPACITY || mayNeedGC) {
+					return false;
+				}
+				//overwrite existing offset on fully used, non-dirty palette
+				offset = _getPaletteOffset(x, y, z);
+				//we skip GC because:
+				//- we know this block isn't already in the palette
+				//- we know every block in the array has its own palette entry (palette full and not dirty), therefore we must be overwriting an entry that's only used by 1 block anyway.
+				needGC = false;
+			} else {
+				offset = (short)nextPaletteIndex++;
 			}
-			offset = (short)nextPaletteIndex++;
 			palette[offset] = val;
 		}
 
 		_setPaletteOffset(x, y, z, offset);
-		this->mayNeedGC = true;
+		this->mayNeedGC = needGC;
 		return true;
 	}
 
 	unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {
 		return _getPaletteOffset(x, y, z);
-	}
-
-	void replace(unsigned short offset, Block val) {
-		if (offset >= nextPaletteIndex) {
-			throw std::invalid_argument("offset must be less than palette size " + std::to_string(nextPaletteIndex));
-		}
-		palette[offset] = val;
-		this->mayNeedGC = true; //operation might create duplicate entries
 	}
 
 	void replaceAll(Block from, Block to) {
@@ -325,13 +326,6 @@ public:
 
 	unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {
 		return 0;
-	}
-
-	void replace(unsigned short offset, Block val) {
-		if (offset >= MAX_PALETTE_SIZE) {
-			throw std::invalid_argument("offset must be zero for a uniform block array");
-		}
-		block = val;
 	}
 
 	void replaceAll(Block from, Block to) {
