@@ -68,10 +68,10 @@ private:
 	using Base = IPalettedBlockArray<Block>;
 	using Word = typename Base::Word;
 	static const uint8_t BITS_PER_BLOCK_INT = static_cast<uint8_t>(BITS_PER_BLOCK);
-public:
 	static const unsigned char BLOCKS_PER_WORD = sizeof(Word) * CHAR_BIT / BITS_PER_BLOCK_INT;
 	static const Word BLOCK_MASK = (1 << BITS_PER_BLOCK_INT) - 1;
 	static const unsigned short WORD_COUNT = Base::ARRAY_CAPACITY / BLOCKS_PER_WORD + (Base::ARRAY_CAPACITY % BLOCKS_PER_WORD ? 1 : 0);
+public:
 	static const unsigned int PAYLOAD_SIZE = WORD_COUNT * sizeof(Word);
 	static const unsigned short MAX_PALETTE_SIZE = (1 << BITS_PER_BLOCK_INT) < Base::ARRAY_CAPACITY ? (1 << BITS_PER_BLOCK_INT) : Base::ARRAY_CAPACITY;
 
