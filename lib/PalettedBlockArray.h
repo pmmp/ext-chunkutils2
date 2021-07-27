@@ -289,7 +289,7 @@ public:
 	}
 
 	const gsl::span<const char> getWordArray() const {
-		return gsl::span<const char>({});
+		return gsl::span<const char>();
 	}
 
 	const gsl::span<const Block> getPalette() const {
