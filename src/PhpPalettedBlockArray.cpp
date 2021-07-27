@@ -65,7 +65,7 @@ static bool paletted_block_array_from_data(zval *return_value, zend_long bitsPer
 }
 
 static void paletted_block_array_get_bits_per_block(zval *object, zval *return_value) {
-	ZVAL_LONG(return_value, fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(object))->container.getBitsPerBlock());
+	ZVAL_LONG(return_value, static_cast<uint8_t>(fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(object))->container.getBitsPerBlock()));
 }
 
 static void paletted_block_array_get_word_array(zval *object, zval *return_value) {

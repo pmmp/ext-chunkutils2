@@ -15,6 +15,8 @@
 #include <vector>
 #include <gsl/span>
 
+#include "VanillaPaletteSize.h"
+
 template<typename Block>
 class IPalettedBlockArray {
 protected:
@@ -43,7 +45,7 @@ public:
 
 	virtual unsigned short countUniqueBlocks() const = 0;
 
-	virtual uint8_t getBitsPerBlock() const = 0;
+	virtual VanillaPaletteSize getBitsPerBlock() const = 0;
 	virtual Block get(unsigned char x, unsigned char y, unsigned char z) const = 0;
 	virtual bool set(unsigned char x, unsigned char y, unsigned char z, Block val) = 0;
 
@@ -60,17 +62,18 @@ public:
 	virtual ~IPalettedBlockArray() {}
 };
 
-template <uint8_t BITS_PER_BLOCK, typename Block>
+template <VanillaPaletteSize BITS_PER_BLOCK, typename Block>
 class PalettedBlockArray final : public IPalettedBlockArray<Block> {
 private:
 	using Base = IPalettedBlockArray<Block>;
 	using Word = typename Base::Word;
+	static const uint8_t BITS_PER_BLOCK_INT = static_cast<uint8_t>(BITS_PER_BLOCK);
 public:
-	static const unsigned char BLOCKS_PER_WORD = sizeof(Word) * CHAR_BIT / BITS_PER_BLOCK;
-	static const Word BLOCK_MASK = (1 << BITS_PER_BLOCK) - 1;
+	static const unsigned char BLOCKS_PER_WORD = sizeof(Word) * CHAR_BIT / BITS_PER_BLOCK_INT;
+	static const Word BLOCK_MASK = (1 << BITS_PER_BLOCK_INT) - 1;
 	static const unsigned short WORD_COUNT = Base::ARRAY_CAPACITY / BLOCKS_PER_WORD + (Base::ARRAY_CAPACITY % BLOCKS_PER_WORD ? 1 : 0);
 	static const unsigned int PAYLOAD_SIZE = WORD_COUNT * sizeof(Word);
-	static const unsigned short MAX_PALETTE_SIZE = (1 << BITS_PER_BLOCK) < Base::ARRAY_CAPACITY ? (1 << BITS_PER_BLOCK) : Base::ARRAY_CAPACITY;
+	static const unsigned short MAX_PALETTE_SIZE = (1 << BITS_PER_BLOCK_INT) < Base::ARRAY_CAPACITY ? (1 << BITS_PER_BLOCK_INT) : Base::ARRAY_CAPACITY;
 
 private:
 	std::array<Word, WORD_COUNT> words;
@@ -89,7 +92,7 @@ private:
 		unsigned short idx = getArrayOffset(x, y, z);
 
 		wordIdx = idx / BLOCKS_PER_WORD;
-		shift = (idx % BLOCKS_PER_WORD) * BITS_PER_BLOCK;
+		shift = (idx % BLOCKS_PER_WORD) * BITS_PER_BLOCK_INT;
 	}
 
 	inline unsigned short _getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {
@@ -118,10 +121,10 @@ public:
 	PalettedBlockArray(gsl::span<uint8_t> &wordArray, std::vector<Block> &paletteEntries) {
 		if (wordArray.size() != sizeof(words)) {
 			//TODO: known-size span can replace this check
-			throw std::length_error("word array size should be exactly " + std::to_string(sizeof(words)) + " bytes for a " + std::to_string(BITS_PER_BLOCK) + "bpb block array, got " + std::to_string(wordArray.size()) + " bytes");
+			throw std::length_error("word array size should be exactly " + std::to_string(sizeof(words)) + " bytes for a " + std::to_string(BITS_PER_BLOCK_INT) + "bpb block array, got " + std::to_string(wordArray.size()) + " bytes");
 		}
 		if (paletteEntries.size() > MAX_PALETTE_SIZE) {
-			throw std::length_error("palette size should be at most " + std::to_string(MAX_PALETTE_SIZE) + " entries for a " + std::to_string(BITS_PER_BLOCK) + "bpb block array, got " + std::to_string(paletteEntries.size()) + " entries");
+			throw std::length_error("palette size should be at most " + std::to_string(MAX_PALETTE_SIZE) + " entries for a " + std::to_string(BITS_PER_BLOCK_INT) + "bpb block array, got " + std::to_string(paletteEntries.size()) + " entries");
 		}
 		if (paletteEntries.size() == 0) {
 			throw std::length_error("palette cannot have a zero size");
@@ -173,7 +176,7 @@ public:
 		return hasFound.size();
 	}
 
-	uint8_t getBitsPerBlock() const {
+	VanillaPaletteSize getBitsPerBlock() const {
 		return BITS_PER_BLOCK;
 	}
 
@@ -262,7 +265,7 @@ public:
 };
 
 template <typename Block>
-class PalettedBlockArray<0, Block> final : public IPalettedBlockArray<Block> {
+class PalettedBlockArray<VanillaPaletteSize::BPB_0, Block> final : public IPalettedBlockArray<Block> {
 private:
 	Block block;
 public:
@@ -308,8 +311,8 @@ public:
 		return 1;
 	}
 
-	uint8_t getBitsPerBlock() const {
-		return 0;
+	VanillaPaletteSize getBitsPerBlock() const {
+		return VanillaPaletteSize::BPB_0;
 	}
 
 	Block get(unsigned char x, unsigned char y, unsigned char z) const {

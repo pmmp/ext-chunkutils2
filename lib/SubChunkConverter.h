@@ -46,9 +46,9 @@ public:
 		metaArray(metaSpan),
 		extraArg(extraArg) {}
 
-	template<uint8_t BITS_PER_BLOCK>
+	template<VanillaPaletteSize BITS_PER_BLOCK>
 	void visit(PalettedBlockArray<BITS_PER_BLOCK, Block>& blockArray) {
-		if (BITS_PER_BLOCK == 0) {
+		if (BITS_PER_BLOCK == VanillaPaletteSize::BPB_0) {
 			//NOOP - uniform arrays will already be correctly initialized during construction
 			return;
 		}

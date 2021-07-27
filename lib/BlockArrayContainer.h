@@ -7,18 +7,8 @@
 #include <vector>
 #include <gsl/span>
 
+#include "VanillaPaletteSize.h"
 #include "PalettedBlockArray.h"
-
-#define MACRO_PER_BITS_PER_BLOCK \
-	BPB_MACRO(0) \
-	BPB_MACRO(1) \
-	BPB_MACRO(2) \
-	BPB_MACRO(3) \
-	BPB_MACRO(4) \
-	BPB_MACRO(5) \
-	BPB_MACRO(6) \
-	BPB_MACRO(8) \
-	BPB_MACRO(16)
 
 template<typename Block>
 class BlockArrayContainer {
@@ -27,7 +17,7 @@ private:
 
 	static BlockArray *blockArrayFromData(uint8_t bitsPerBlock, gsl::span<uint8_t> &wordArray, std::vector<Block> &paletteEntries) {
 		switch (bitsPerBlock) {
-#define BPB_MACRO(i) case i: return new PalettedBlockArray<i, Block>(wordArray, paletteEntries);
+#define BPB_MACRO(i) case i: return new PalettedBlockArray<VanillaPaletteSize::BPB_##i, Block>(wordArray, paletteEntries);
 			MACRO_PER_BITS_PER_BLOCK
 #undef BPB_MACRO
 		default:
@@ -37,8 +27,8 @@ private:
 
 	static BlockArray *blockArrayFromCapacity(Block initializer, unsigned short capacity) {
 #define BPB_MACRO(i) \
-		if (capacity <= PalettedBlockArray<i, Block>::MAX_PALETTE_SIZE) { \
-			return new PalettedBlockArray<i, Block>(initializer); \
+		if (capacity <= PalettedBlockArray<VanillaPaletteSize::BPB_##i, Block>::MAX_PALETTE_SIZE) { \
+			return new PalettedBlockArray<VanillaPaletteSize::BPB_##i, Block>(initializer); \
 		}
 
 		MACRO_PER_BITS_PER_BLOCK
@@ -52,7 +42,7 @@ private:
 public:
 	static unsigned int getExpectedPayloadSize(uint8_t bitsPerBlock) {
 		switch (bitsPerBlock) {
-#define BPB_MACRO(i) case i: return PalettedBlockArray<i, Block>::PAYLOAD_SIZE;
+#define BPB_MACRO(i) case i: return PalettedBlockArray<VanillaPaletteSize::BPB_##i, Block>::PAYLOAD_SIZE;
 			MACRO_PER_BITS_PER_BLOCK
 #undef BPB_MACRO
 		default:
@@ -88,8 +78,8 @@ public:
 	template<typename ReturnType, typename Visited>
 	ReturnType specializeForArraySize(Visited& v) {
 #define BPB_MACRO(size) \
-		if (auto casted = dynamic_cast<PalettedBlockArray<size, Block>*>(blockArray)){ \
-			return v.template visit<size>(*casted); \
+		if (auto casted = dynamic_cast<PalettedBlockArray<VanillaPaletteSize::BPB_##size, Block>*>(blockArray)){ \
+			return v.template visit<VanillaPaletteSize::BPB_##size>(*casted); \
 		}
 
 		MACRO_PER_BITS_PER_BLOCK
@@ -110,7 +100,7 @@ public:
 		return blockArray->getMaxPaletteSize();
 	}
 
-	uint8_t getBitsPerBlock() const {
+	VanillaPaletteSize getBitsPerBlock() const {
 		return blockArray->getBitsPerBlock();
 	}
 
