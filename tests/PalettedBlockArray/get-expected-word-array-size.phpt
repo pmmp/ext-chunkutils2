@@ -24,7 +24,7 @@ try{
 var_dump("ok");
 ?>
 --EXPECT--
-invalid bits-per-block: 0
+int(0)
 int(512)
 int(1024)
 int(1640)

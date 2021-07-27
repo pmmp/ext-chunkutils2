@@ -10,6 +10,7 @@
 #include "PalettedBlockArray.h"
 
 #define MACRO_PER_BITS_PER_BLOCK \
+	BPB_MACRO(0) \
 	BPB_MACRO(1) \
 	BPB_MACRO(2) \
 	BPB_MACRO(3) \

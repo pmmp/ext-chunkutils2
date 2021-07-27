@@ -67,6 +67,11 @@ public:
 		}
 	}
 
+	template<>
+	void visit(PalettedBlockArray<0, Block>& blockArray) {
+		//NOOP - uniform arrays will already be correctly initialized during construction
+	}
+
 	void visit(IPalettedBlockArray<Block>& blockArray) {
 		throw std::invalid_argument("unknown block array size");
 	}

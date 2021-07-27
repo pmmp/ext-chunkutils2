@@ -261,4 +261,95 @@ public:
 	}
 };
 
+template <typename Block>
+class PalettedBlockArray<0, Block> final : public IPalettedBlockArray<Block> {
+private:
+	Block block;
+public:
+	static const unsigned int PAYLOAD_SIZE = 0;
+	static const unsigned int MAX_PALETTE_SIZE = 1;
+
+	PalettedBlockArray(Block block) {
+		this->block = block;
+	}
+
+	PalettedBlockArray(gsl::span<uint8_t>& wordArray, std::vector<Block>& paletteEntries) {
+		if (wordArray.size() != PAYLOAD_SIZE) {
+			throw std::invalid_argument("empty word array expected for zero bits-per-block");
+		}
+		if (paletteEntries.size() != MAX_PALETTE_SIZE) {
+			throw std::invalid_argument("expected exactly 1 palette entry for zero bits-per-block");
+		}
+
+		block = paletteEntries[0];
+	}
+
+	PalettedBlockArray(const PalettedBlockArray& other) {
+		block = other.block;
+	}
+
+	const gsl::span<const char> getWordArray() const {
+		return gsl::span<const char>({});
+	}
+
+	const gsl::span<const Block> getPalette() const {
+		return gsl::span<const Block>(&block, 1);
+	}
+
+	unsigned short getPaletteSize() const {
+		return 1;
+	}
+
+	unsigned short getMaxPaletteSize() const {
+		return 1;
+	}
+
+	unsigned short countUniqueBlocks() const {
+		return 1;
+	}
+
+	uint8_t getBitsPerBlock() const {
+		return 0;
+	}
+
+	Block get(unsigned char x, unsigned char y, unsigned char z) const {
+		return block;
+	}
+
+	bool set(unsigned char x, unsigned char y, unsigned char z, Block val) {
+		return val == block;
+	}
+
+	unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {
+		return 0;
+	}
+
+	void replace(unsigned short offset, Block val) {
+		if (offset >= MAX_PALETTE_SIZE) {
+			throw std::invalid_argument("offset must be zero for a uniform block array");
+		}
+		block = val;
+	}
+
+	void replaceAll(Block from, Block to) {
+		if (block == from) {
+			block = to;
+		}
+	}
+
+	void convertFrom(const IPalettedBlockArray<Block>& otherArray) {
+		if (otherArray.countUniqueBlocks() > MAX_PALETTE_SIZE) {
+			throw std::range_error("palette too large");
+		}
+		block = otherArray.get(0, 0, 0);
+	}
+
+	void fastUpsize(const IPalettedBlockArray<Block>& otherArray) {
+		throw std::logic_error("Upsizing to zero-bits-per-block doesn't make any sense. Something has gone horribly wrong.");
+	}
+
+	IPalettedBlockArray<Block>* clone() const {
+		return new PalettedBlockArray(*this);
+	}
+};
 #endif
