@@ -11,6 +11,7 @@ PHP_METHOD(PhpLightArray, get);
 PHP_METHOD(PhpLightArray, set);
 PHP_METHOD(PhpLightArray, getData);
 PHP_METHOD(PhpLightArray, collectGarbage);
+PHP_METHOD(PhpLightArray, isUniform);
 
 void register_light_array_class();
 

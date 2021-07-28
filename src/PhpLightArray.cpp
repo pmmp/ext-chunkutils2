@@ -175,6 +175,26 @@ PHP_METHOD(PhpLightArray, collectGarbage) {
 
 	//TODO: we currently don't bother trying to save memory with copy-on-write tricks, to reduce implementation complexity.
 }
+
+ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_PhpLightArray_isUniform, 0, 1, _IS_BOOL, 0)
+	ZEND_ARG_TYPE_INFO(0, level, IS_LONG, 0)
+ZEND_END_ARG_INFO()
+
+PHP_METHOD(PhpLightArray, isUniform) {
+	zend_long value;
+
+	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
+		Z_PARAM_LONG(value)
+	ZEND_PARSE_PARAMETERS_END();
+
+	if (value > LightLevel::MAX) {
+		zend_throw_exception_ex(spl_ce_InvalidArgumentException, 0, "Light level must be max %u", LightLevel::MAX);
+	}
+
+	auto object = fetch_from_zend_object<light_array_obj>(Z_OBJ_P(getThis()));
+	RETURN_BOOL(object->lightArray.isUniform(value));
+}
+
 static zend_function_entry light_array_class_methods[] = {
 	PHP_ME(PhpLightArray, __construct, arginfo_PhpLightArray___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	PHP_ME(PhpLightArray, fill, arginfo_PhpLightArray_fill, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
@@ -182,6 +202,7 @@ static zend_function_entry light_array_class_methods[] = {
 	PHP_ME(PhpLightArray, set, arginfo_PhpLightArray_set, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpLightArray, getData, arginfo_PhpLightArray_getData, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpLightArray, collectGarbage, arginfo_PhpLightArray_collectGarbage, ZEND_ACC_PUBLIC)
+	PHP_ME(PhpLightArray, isUniform, arginfo_PhpLightArray_isUniform, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 

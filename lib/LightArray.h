@@ -63,5 +63,14 @@ public:
 	const gsl::span<const uint8_t, DATA_SIZE> getRawData() const {
 		return gsl::span<const uint8_t>(mValues);
 	}
+
+	bool isUniform(const LightLevel value) const {
+		for (auto i : mValues) {
+			if (i != value) {
+				return false;
+			}
+		}
+		return true;
+	}
 };
 #endif
