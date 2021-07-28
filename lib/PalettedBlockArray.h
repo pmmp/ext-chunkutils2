@@ -22,6 +22,8 @@ class IPalettedBlockArray {
 protected:
 	typedef uint32_t Word;
 
+	using Coord = unsigned char;
+
 	// Whether this block array may have unused entries in its palette. Indicates that garbage collection could reduce the size of the array
 	bool mayNeedGC = false;
 public:
@@ -46,10 +48,10 @@ public:
 	virtual unsigned short countUniqueBlocks() const = 0;
 
 	virtual VanillaPaletteSize getBitsPerBlock() const = 0;
-	virtual Block get(unsigned char x, unsigned char y, unsigned char z) const = 0;
-	virtual bool set(unsigned char x, unsigned char y, unsigned char z, Block val) = 0;
+	virtual Block get(Coord x, Coord y, Coord z) const = 0;
+	virtual bool set(Coord x, Coord y, Coord z, Block val) = 0;
 
-	virtual unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const = 0;
+	virtual unsigned short getPaletteOffset(Coord x, Coord y, Coord z) const = 0;
 
 	virtual void replaceAll(Block from, Block to) = 0;
 
@@ -66,6 +68,7 @@ class PalettedBlockArray final : public IPalettedBlockArray<Block> {
 private:
 	using Base = IPalettedBlockArray<Block>;
 	using Word = typename Base::Word;
+	using Coord = typename Base::Coord;
 	static const uint8_t BITS_PER_BLOCK_INT = static_cast<uint8_t>(BITS_PER_BLOCK);
 	static const unsigned char BLOCKS_PER_WORD = sizeof(Word) * CHAR_BIT / BITS_PER_BLOCK_INT;
 	static const Word BLOCK_MASK = (1 << BITS_PER_BLOCK_INT) - 1;
@@ -82,11 +85,11 @@ private:
 
 	unsigned short nextPaletteIndex = 0;
 
-	inline unsigned short getArrayOffset(unsigned char x, unsigned char y, unsigned char z) const {
+	inline unsigned short getArrayOffset(Coord x, Coord y, Coord z) const {
 		return (x << (Base::COORD_BIT_SIZE * 2)) | (z << Base::COORD_BIT_SIZE) | y;
 	}
 
-	inline void find(unsigned char x, unsigned char y, unsigned char z, unsigned short &wordIdx, unsigned char &shift) const {
+	inline void find(Coord x, Coord y, Coord z, unsigned short &wordIdx, unsigned char &shift) const {
 		assert(x < Base::ARRAY_DIM && y < Base::ARRAY_DIM && z < Base::ARRAY_DIM);
 		unsigned short idx = getArrayOffset(x, y, z);
 
@@ -94,7 +97,7 @@ private:
 		shift = (idx % BLOCKS_PER_WORD) * BITS_PER_BLOCK_INT;
 	}
 
-	inline unsigned short _getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {
+	inline unsigned short _getPaletteOffset(Coord x, Coord y, Coord z) const {
 		unsigned short wordIdx;
 		unsigned char shift;
 		find(x, y, z, wordIdx, shift);
@@ -102,7 +105,7 @@ private:
 		return (words[wordIdx] >> shift) & BLOCK_MASK;
 	}
 
-	inline void _setPaletteOffset(unsigned char x, unsigned char y, unsigned char z, unsigned short offset) {
+	inline void _setPaletteOffset(Coord x, Coord y, Coord z, unsigned short offset) {
 		unsigned short wordIdx;
 		unsigned char shift;
 		find(x, y, z, wordIdx, shift);
@@ -161,9 +164,9 @@ public:
 	unsigned short countUniqueBlocks() const {
 		std::unordered_set<Block> hasFound;
 
-		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
-			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
-				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
+		for (Coord x = 0; x < Base::ARRAY_DIM; ++x) {
+			for (Coord z = 0; z < Base::ARRAY_DIM; ++z) {
+				for (Coord y = 0; y < Base::ARRAY_DIM; ++y) {
 					auto inserted = hasFound.insert(palette[_getPaletteOffset(x, y, z)]).second;
 					if (inserted && hasFound.size() == getPaletteSize()) {
 						break;
@@ -179,13 +182,13 @@ public:
 		return BITS_PER_BLOCK;
 	}
 
-	Block get(unsigned char x, unsigned char y, unsigned char z) const {
+	Block get(Coord x, Coord y, Coord z) const {
 		unsigned short offset = _getPaletteOffset(x, y, z);
 		assert(offset < nextPaletteIndex);
 		return palette[offset];
 	}
 
-	bool set(unsigned char x, unsigned char y, unsigned char z, Block val) {
+	bool set(Coord x, Coord y, Coord z, Block val) {
 		//TODO (suggested by sandertv): check performance when recording last written block and palette offset - might improve performance for repetetive writes
 
 		short offset = -1;
@@ -219,7 +222,7 @@ public:
 		return true;
 	}
 
-	unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {
+	unsigned short getPaletteOffset(Coord x, Coord y, Coord z) const {
 		return _getPaletteOffset(x, y, z);
 	}
 
@@ -236,9 +239,9 @@ public:
 	}
 
 	void convertFrom(const IPalettedBlockArray<Block> &otherArray) {
-		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
-			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
-				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
+		for (Coord x = 0; x < Base::ARRAY_DIM; ++x) {
+			for (Coord z = 0; z < Base::ARRAY_DIM; ++z) {
+				for (Coord y = 0; y < Base::ARRAY_DIM; ++y) {
 					if (!set(x, y, z, otherArray.get(x, y, z))) {
 						throw std::range_error("out of palette space");
 					}
@@ -252,9 +255,9 @@ private:
 		auto otherPalette = otherArray.getPalette();
 		nextPaletteIndex = otherPalette.size();
 		std::copy(otherPalette.data(), otherPalette.data() + otherPalette.size(), palette.data());
-		for (unsigned char x = 0; x < Base::ARRAY_DIM; ++x) {
-			for (unsigned char z = 0; z < Base::ARRAY_DIM; ++z) {
-				for (unsigned char y = 0; y < Base::ARRAY_DIM; ++y) {
+		for (Coord x = 0; x < Base::ARRAY_DIM; ++x) {
+			for (Coord z = 0; z < Base::ARRAY_DIM; ++z) {
+				for (Coord y = 0; y < Base::ARRAY_DIM; ++y) {
 					_setPaletteOffset(x, y, z, otherArray.getPaletteOffset(x, y, z));
 				}
 			}
@@ -291,6 +294,7 @@ template <typename Block>
 class PalettedBlockArray<VanillaPaletteSize::BPB_0, Block> final : public IPalettedBlockArray<Block> {
 private:
 	Block block;
+	using Coord = typename IPalettedBlockArray<Block>::Coord;
 public:
 	static const unsigned int PAYLOAD_SIZE = 0;
 	static const unsigned int MAX_PALETTE_SIZE = 1;
@@ -338,15 +342,15 @@ public:
 		return VanillaPaletteSize::BPB_0;
 	}
 
-	Block get(unsigned char x, unsigned char y, unsigned char z) const {
+	Block get(Coord x, Coord y, Coord z) const {
 		return block;
 	}
 
-	bool set(unsigned char x, unsigned char y, unsigned char z, Block val) {
+	bool set(Coord x, Coord y, Coord z, Block val) {
 		return val == block;
 	}
 
-	unsigned short getPaletteOffset(unsigned char x, unsigned char y, unsigned char z) const {
+	unsigned short getPaletteOffset(Coord x, Coord y, Coord z) const {
 		return 0;
 	}
 
