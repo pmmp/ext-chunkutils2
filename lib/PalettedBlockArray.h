@@ -342,15 +342,15 @@ public:
 		return VanillaPaletteSize::BPB_0;
 	}
 
-	Block get(Coord x, Coord y, Coord z) const {
+	Block get(Coord, Coord, Coord) const {
 		return block;
 	}
 
-	bool set(Coord x, Coord y, Coord z, Block val) {
+	bool set(Coord, Coord, Coord, Block val) {
 		return val == block;
 	}
 
-	unsigned short getPaletteOffset(Coord x, Coord y, Coord z) const {
+	unsigned short getPaletteOffset(Coord, Coord, Coord) const {
 		return 0;
 	}
 
