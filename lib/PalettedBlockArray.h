@@ -261,7 +261,7 @@ private:
 		}
 
 		//we directly copy palette from the old variant; it might have holes
-		this->mayNeedGC = otherArray.mayNeedGC;
+		this->mayNeedGC = otherArray.needsGarbageCollection();
 	}
 
 public:
