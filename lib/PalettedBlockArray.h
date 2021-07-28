@@ -246,8 +246,9 @@ public:
 			}
 		}
 	}
-
-	void fastUpsize(const IPalettedBlockArray<Block> &otherArray) {
+private:
+	template<typename BlockArray>
+	void _fastUpsize(const BlockArray& otherArray) {
 		auto otherPalette = otherArray.getPalette();
 		nextPaletteIndex = otherPalette.size();
 		std::copy(otherPalette.data(), otherPalette.data() + otherPalette.size(), palette.data());
@@ -258,6 +259,24 @@ public:
 				}
 			}
 		}
+	}
+
+public:
+	void fastUpsize(const IPalettedBlockArray<Block> &otherArray) {
+#define BPB_MACRO(i) \
+		if (BITS_PER_BLOCK_INT >= i) { \
+			if (auto casted = dynamic_cast<const PalettedBlockArray<VanillaPaletteSize::BPB_##i, Block>*>(&otherArray)) { \
+				return _fastUpsize(*casted); \
+			} \
+		}
+		MACRO_PER_BITS_PER_BLOCK
+#undef BPB_MACRO
+
+		//fallback for alternative implementations
+		if (BITS_PER_BLOCK_INT < static_cast<uint8_t>(otherArray.getBitsPerBlock())) {
+			throw std::logic_error("Cannot upsize from a larger palette. Something has gone horribly wrong.");
+		}
+		_fastUpsize(otherArray);
 	}
 
 	Base *clone() const {
