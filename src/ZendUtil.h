@@ -32,5 +32,18 @@ typedef zval chunkutils2_handler_context;
 #define HANDLER_CONTEXT_FROM_ZVAL(zv) (zv)
 #endif
 
+//custom version of ZEND_ARG_OBJ_INFO that accepts strings directly, instead of barewords - needed for macro usage
+#if PHP_VERSION_ID < 80000
+#define CUSTOM_ZEND_ARG_OBJ_INFO_STR(pass_by_ref, name, classname, allow_null)  { #name, ZEND_TYPE_ENCODE_CLASS_CONST(classname, allow_null), pass_by_ref, 0 },
+#else
+#define CUSTOM_ZEND_ARG_OBJ_INFO_STR(pass_by_ref, name, classname, allow_null) \
+	{ #name, ZEND_TYPE_INIT_CLASS_CONST(classname, allow_null, _ZEND_ARG_INFO_FLAGS(pass_by_ref, 0)), NULL },
+#endif
+
+#define CUSTOM_ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX_STR(name, return_reference, required_num_args, class_name, allow_null) \
+	static const zend_internal_arg_info name[] = { \
+		{ (const char*)(zend_uintptr_t)(required_num_args), \
+			ZEND_TYPE_INIT_CLASS_CONST(class_name, allow_null, _ZEND_ARG_INFO_FLAGS(return_reference, 0)), NULL },
+
 #endif
 

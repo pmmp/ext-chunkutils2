@@ -195,7 +195,18 @@ end:
 	return result;
 }
 
-
+bool paletted_block_array_fill(paletted_block_array_obj *intern, zend_long fillEntry) {
+	if (!checkPaletteEntrySize(fillEntry)) {
+		return false;
+	}
+	try {
+		new(&intern->container) NormalBlockArrayContainer((Block)fillEntry, 0);
+	} catch (std::exception& e) {
+		zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%s", e.what());
+		return false;
+	}
+	return true;
+}
 /* PHP-land PalettedBlockArray methods */
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_PalettedBlockArray___construct, 0, 0, 1)
@@ -209,20 +220,11 @@ PHP_METHOD(PhpPalettedBlockArray, __construct) {
 		Z_PARAM_LONG(fillEntry)
 	ZEND_PARSE_PARAMETERS_END();
 
-	if (!checkPaletteEntrySize(fillEntry)) {
-		return;
-	}
-
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
-	try {
-		new(&intern->container) NormalBlockArrayContainer((Block)fillEntry, 0);
-	}
-	catch (std::exception& e) {
-		zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%s", e.what());
-	}
+	paletted_block_array_fill(intern, fillEntry);
 }
 
-ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_PalettedBlockArray_fromData, 0, 3, pocketmine\\world\\format\\PalettedBlockArray, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_PalettedBlockArray_fromData, 0, 3, paletted_block_array_classname, 0)
 	ZEND_ARG_TYPE_INFO(0, bitsPerBlock, IS_LONG, 0)
 	ZEND_ARG_TYPE_INFO(0, wordArray, IS_STRING, 0)
 	ZEND_ARG_ARRAY_INFO(0, palette, 0)
@@ -406,7 +408,7 @@ void register_paletted_block_array_class() {
 	paletted_block_array_handlers.clone_obj = paletted_block_array_clone;
 
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\PalettedBlockArray", paletted_block_array_class_methods);
+	INIT_CLASS_ENTRY(ce, paletted_block_array_classname, paletted_block_array_class_methods);
 	ce.create_object = paletted_block_array_new;
 	ce.serialize = paletted_block_array_serialize;
 	ce.unserialize = paletted_block_array_unserialize;

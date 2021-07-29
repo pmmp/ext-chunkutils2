@@ -14,11 +14,6 @@ extern "C" {
 zend_class_entry* light_array_entry;
 static zend_object_handlers light_array_handlers;
 
-typedef struct {
-	LightArray lightArray;
-	zend_object std;
-} light_array_obj;
-
 /* internal object handlers */
 
 static zend_object* light_array_new(zend_class_entry* class_type) {
@@ -70,6 +65,10 @@ static int light_array_unserialize(zval* obj, zend_class_entry* ce, const unsign
 	return SUCCESS;
 }
 
+void light_array_fill(light_array_obj* object, zend_long level) {
+	new (&object->lightArray) LightArray(static_cast<uint8_t>(level));
+}
+
 ZEND_BEGIN_ARG_INFO_EX(arginfo_PhpLightArray___construct, 0, 0, 1)
 	ZEND_ARG_TYPE_INFO(0, payload, IS_STRING, 0)
 ZEND_END_ARG_INFO()
@@ -110,8 +109,7 @@ PHP_METHOD(PhpLightArray, fill) {
 
 	object_init_ex(return_value, light_array_entry);
 	auto object = fetch_from_zend_object<light_array_obj>(Z_OBJ_P(return_value));
-
-	new (&object->lightArray) LightArray(static_cast<uint8_t>(level));
+	light_array_fill(object, level);
 }
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_PhpLightArray_get, 0, 3, IS_LONG, 0)
@@ -213,7 +211,7 @@ void register_light_array_class() {
 	light_array_handlers.clone_obj = light_array_clone;
 
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\LightArray", light_array_class_methods);
+	INIT_CLASS_ENTRY(ce, light_array_classname, light_array_class_methods);
 	ce.create_object = light_array_new;
 	ce.serialize = light_array_serialize;
 	ce.unserialize = light_array_unserialize;
