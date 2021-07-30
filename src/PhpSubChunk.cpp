@@ -154,6 +154,7 @@ static int sub_chunk_unserialize(zval* object, zend_class_entry* ce, const unsig
 	const unsigned char* end = buf + buf_len;
 
 	zval* emptyBlockId, * blockLayers, * zvBlockLayer, * blockLight, * skyLight, *properties;
+	sub_chunk_obj* intern;
 	emptyBlockId = var_tmp_var(&unserialize_data);
 	if (!php_var_unserialize(emptyBlockId, &start, end, &unserialize_data) || Z_TYPE_P(emptyBlockId) != IS_LONG) {
 		zend_throw_exception(NULL, "Failed to unserialize SubChunk::emptyBlockId", 0);
@@ -196,7 +197,7 @@ static int sub_chunk_unserialize(zval* object, zend_class_entry* ce, const unsig
 	}
 
 	object_init_ex(object, sub_chunk_entry);
-	auto intern = fetch_intern(Z_OBJ_P(object));
+	intern = fetch_intern(Z_OBJ_P(object));
 	intern->emptyBlockId = Z_LVAL_P(emptyBlockId);
 	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(blockLayers), zvBlockLayer) {
 		auto blockLayerIntern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(zvBlockLayer));
