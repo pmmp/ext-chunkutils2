@@ -224,7 +224,7 @@ PHP_METHOD(PhpPalettedBlockArray, __construct) {
 	paletted_block_array_fill(intern, fillEntry);
 }
 
-ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_PalettedBlockArray_fromData, 0, 3, paletted_block_array_classname, 0)
+CUSTOM_ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX_STR(arginfo_PalettedBlockArray_fromData, 0, 3, paletted_block_array_classname, 0)
 	ZEND_ARG_TYPE_INFO(0, bitsPerBlock, IS_LONG, 0)
 	ZEND_ARG_TYPE_INFO(0, wordArray, IS_STRING, 0)
 	ZEND_ARG_ARRAY_INFO(0, palette, 0)
