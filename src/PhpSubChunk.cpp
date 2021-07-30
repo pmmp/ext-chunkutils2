@@ -153,18 +153,19 @@ static int sub_chunk_unserialize(zval* object, zend_class_entry* ce, const unsig
 	const unsigned char* start = buf;
 	const unsigned char* end = buf + buf_len;
 
-	zval* emptyBlockId = var_tmp_var(&unserialize_data);
+	zval* emptyBlockId, * blockLayers, * zvBlockLayer, * blockLight, * skyLight, *properties;
+	emptyBlockId = var_tmp_var(&unserialize_data);
 	if (!php_var_unserialize(emptyBlockId, &start, end, &unserialize_data) || Z_TYPE_P(emptyBlockId) != IS_LONG) {
 		zend_throw_exception(NULL, "Failed to unserialize SubChunk::emptyBlockId", 0);
 		goto end;
 	}
 
-	zval* blockLayers = var_tmp_var(&unserialize_data);
+	blockLayers = var_tmp_var(&unserialize_data);
 	if (!php_var_unserialize(blockLayers, &start, end, &unserialize_data) || Z_TYPE_P(blockLayers) != IS_ARRAY) {
 		zend_throw_exception(NULL, "Failed to unserialize SubChunk::blockLayers", 0);
 		goto end;
 	}
-	zval* zvBlockLayer;
+	zvBlockLayer;
 	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(blockLayers), zvBlockLayer) {
 		if (Z_TYPE_P(zvBlockLayer) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(zvBlockLayer), paletted_block_array_entry)) {
 			zend_throw_exception(NULL, "SubChunk::blockLayers expects only objects of type " paletted_block_array_classname, 0);
@@ -172,7 +173,7 @@ static int sub_chunk_unserialize(zval* object, zend_class_entry* ce, const unsig
 		}
 	} ZEND_HASH_FOREACH_END();
 
-	zval* blockLight = var_tmp_var(&unserialize_data);
+	blockLight = var_tmp_var(&unserialize_data);
 	if (
 		!php_var_unserialize(blockLight, &start, end, &unserialize_data) || (
 			Z_TYPE_P(blockLight) != IS_NULL &&
@@ -183,7 +184,7 @@ static int sub_chunk_unserialize(zval* object, zend_class_entry* ce, const unsig
 		goto end;
 	}
 
-	zval* skyLight = var_tmp_var(&unserialize_data);
+	skyLight = var_tmp_var(&unserialize_data);
 	if (
 		!php_var_unserialize(skyLight, &start, end, &unserialize_data) || (
 			Z_TYPE_P(skyLight) != IS_NULL &&
@@ -212,7 +213,7 @@ static int sub_chunk_unserialize(zval* object, zend_class_entry* ce, const unsig
 		Z_ADDREF_P(skyLight);
 	}
 
-	zval* properties = var_tmp_var(&unserialize_data);
+	properties = var_tmp_var(&unserialize_data);
 	if (!php_var_unserialize(properties, &start, end, &unserialize_data) || Z_TYPE_P(properties) != IS_ARRAY) {
 		zend_throw_exception(NULL, "Failed to unserialize SubChunk user properties", 0);
 		goto end;
