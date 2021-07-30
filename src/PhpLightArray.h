@@ -22,9 +22,6 @@ PHP_METHOD(PhpLightArray, isUniform);
 
 extern zend_class_entry* light_array_entry;
 
-#define stringify_ex(macro) #macro
-#define stringify(macro) stringify_ex(macro)
-
 #define light_array_classname "pocketmine\\world\\format\\LightArray"
 
 void light_array_fill(light_array_obj* object, zend_long level);
