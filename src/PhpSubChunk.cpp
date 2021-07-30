@@ -167,7 +167,7 @@ static int sub_chunk_unserialize(zval* object, zend_class_entry* ce, const unsig
 		zend_throw_exception(NULL, "Failed to unserialize SubChunk::blockLayers", 0);
 		goto end;
 	}
-	zvBlockLayer;
+
 	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(blockLayers), zvBlockLayer) {
 		if (Z_TYPE_P(zvBlockLayer) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(zvBlockLayer), paletted_block_array_entry)) {
 			zend_throw_exception_ex(NULL, 0, "SubChunk::blockLayers expects only objects of type %s", ZSTR_VAL(paletted_block_array_entry->name));
