@@ -9,13 +9,13 @@ extern "C" {
 }
 
 
-CUSTOM_ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX_STR(arginfo_SubChunk_getLightArray, 0, 0, light_array_classname, 0)
+ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_SubChunk_getLightArray, 0, 0, pocketmine\\world\\format\\LightArray, 0)
 ZEND_END_ARG_INFO();
 
 
 
 ZEND_BEGIN_ARG_WITH_RETURN_TYPE_INFO_EX(arginfo_SubChunk_setLightArray, 0, 1, IS_VOID, 0)
-	CUSTOM_ZEND_ARG_OBJ_INFO_STR(0, data, light_array_classname, 0)
+	ZEND_ARG_OBJ_INFO(0, data, pocketmine\\world\\format\\LightArray, 0)
 ZEND_END_ARG_INFO()
 
 #define parse_args_SubChunk_setLightArray() \

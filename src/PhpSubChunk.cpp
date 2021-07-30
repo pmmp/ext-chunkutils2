@@ -169,7 +169,7 @@ static int sub_chunk_unserialize(zval* object, zend_class_entry* ce, const unsig
 	zvBlockLayer;
 	ZEND_HASH_FOREACH_VAL(Z_ARRVAL_P(blockLayers), zvBlockLayer) {
 		if (Z_TYPE_P(zvBlockLayer) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(zvBlockLayer), paletted_block_array_entry)) {
-			zend_throw_exception(NULL, "SubChunk::blockLayers expects only objects of type " paletted_block_array_classname, 0);
+			zend_throw_exception_ex(NULL, 0, "SubChunk::blockLayers expects only objects of type %s", ZSTR_VAL(paletted_block_array_entry->name));
 			goto end;
 		}
 	} ZEND_HASH_FOREACH_END();
@@ -265,8 +265,8 @@ static void sub_chunk_collect_garbage(sub_chunk_obj* object) {
 ZEND_BEGIN_ARG_INFO_EX(arginfo_SubChunk___construct, 0, 0, 2)
 	ZEND_ARG_TYPE_INFO(0, emptyBlockId, IS_LONG, 0)
 	ZEND_ARG_ARRAY_INFO(0, blocks, 0)
-	CUSTOM_ZEND_ARG_OBJ_INFO_STR(0, skyLight, light_array_classname, 1)
-	CUSTOM_ZEND_ARG_OBJ_INFO_STR(0, blockLight, light_array_classname, 1)
+	ZEND_ARG_OBJ_INFO(0, skyLight, pocketmine\\world\\format\\LightArray, 1)
+	ZEND_ARG_OBJ_INFO(0, blockLight, pocketmine\\world\\format\\LightArray, 1)
 ZEND_END_ARG_INFO()
 
 PHP_METHOD(PhpSubChunk, __construct) {
@@ -286,7 +286,7 @@ PHP_METHOD(PhpSubChunk, __construct) {
 	zval *layer;
 	ZEND_HASH_FOREACH_VAL(htBlockLayers, layer) {
 		if (Z_TYPE_P(layer) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(layer), paletted_block_array_entry)) {
-			zend_type_error("Layers array should contain only " paletted_block_array_classname " objects");
+			zend_type_error("Layers array should contain only %s objects", ZSTR_VAL(paletted_block_array_entry->name));
 			return;
 		}
 	} ZEND_HASH_FOREACH_END();
@@ -516,7 +516,7 @@ void register_sub_chunk_class() {
 	sub_chunk_handlers.clone_obj = sub_chunk_clone;
 
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, sub_chunk_classname, sub_chunk_class_methods);
+	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\SubChunk", sub_chunk_class_methods);
 	ce.create_object = sub_chunk_new;
 	ce.serialize = sub_chunk_serialize;
 	ce.unserialize = sub_chunk_unserialize;

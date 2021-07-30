@@ -211,7 +211,7 @@ void register_light_array_class() {
 	light_array_handlers.clone_obj = light_array_clone;
 
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, light_array_classname, light_array_class_methods);
+	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\LightArray", light_array_class_methods);
 	ce.create_object = light_array_new;
 	ce.serialize = light_array_serialize;
 	ce.unserialize = light_array_unserialize;
