@@ -500,6 +500,7 @@ static zend_function_entry sub_chunk_class_methods[] = {
 	PHP_ME(PhpSubChunk, __construct, arginfo_SubChunk___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	PHP_ME(PhpSubChunk, isEmptyAuthoritative, arginfo_SubChunk_isEmptyAuthoritative, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpSubChunk, isEmptyFast, arginfo_SubChunk_isEmptyFast, ZEND_ACC_PUBLIC)
+	PHP_ME(PhpSubChunk, getEmptyBlockId, arginfo_SubChunk_getEmptyBlockId, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpSubChunk, getFullBlock, arginfo_SubChunk_getFullBlock, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpSubChunk, setFullBlock, arginfo_SubChunk_setFullBlock, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpSubChunk, getBlockLayers, arginfo_SubChunk_getBlockLayers, ZEND_ACC_PUBLIC)
