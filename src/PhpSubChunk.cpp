@@ -382,7 +382,6 @@ PHP_METHOD(PhpSubChunk, setFullBlock) {
 	paletted_block_array_obj* blockLayer;
 	if (intern->blockLayers.empty()) {
 		zval zvNewLayer;
-		//TODO: this isn't enough to initialize a PalettedBlockArray
 		object_init_ex(&zvNewLayer, paletted_block_array_entry);
 		blockLayer = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ(zvNewLayer));
 		if (!paletted_block_array_fill(blockLayer, intern->emptyBlockId)) {
