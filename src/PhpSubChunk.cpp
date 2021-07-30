@@ -108,7 +108,8 @@ static int sub_chunk_serialize(zval* obj, unsigned char** buffer, size_t* buf_le
 	array_init_size(&zv, object->blockLayers.size());
 	for (auto i : object->blockLayers) {
 		zval zlayer;
-		ZVAL_OBJ_COPY(&zlayer, &i->std);
+		GC_ADDREF(&i->std);
+		ZVAL_OBJ(&zlayer, &i->std);
 		add_next_index_zval(&zv, &zlayer);
 	}
 	php_var_serialize(&buf, &zv, &serialize_data);
@@ -404,7 +405,8 @@ PHP_METHOD(PhpSubChunk, getBlockLayers) {
 	array_init_size(return_value, intern->blockLayers.size());
 	for (auto layer : intern->blockLayers) {
 		zval zv;
-		ZVAL_OBJ_COPY(&zv, &layer->std);
+		GC_ADDREF(&layer->std);
+		ZVAL_OBJ(&zv, &layer->std);
 		add_next_index_zval(return_value, &zv);
 	}
 }
@@ -451,7 +453,8 @@ PHP_METHOD(PhpSubChunk, getBlockSkyLightArray) {
 
 	auto intern = sub_chunk_this();
 	ensure_light_array_initialized(&intern->skyLight);
-	RETURN_OBJ_COPY(&intern->skyLight->std);
+	GC_ADDREF(&intern->skyLight->std);
+	RETURN_OBJ(&intern->skyLight->std);
 }
 
 PHP_METHOD(PhpSubChunk, getBlockLightArray) {
@@ -459,7 +462,8 @@ PHP_METHOD(PhpSubChunk, getBlockLightArray) {
 
 	auto intern = sub_chunk_this();
 	ensure_light_array_initialized(&intern->blockLight);
-	RETURN_OBJ_COPY(&intern->blockLight->std);
+	GC_ADDREF(&intern->blockLight->std);
+	RETURN_OBJ(&intern->blockLight->std);
 }
 
 PHP_METHOD(PhpSubChunk, setBlockSkyLightArray) {
