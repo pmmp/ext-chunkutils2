@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @generate-function-entries
+ */
+
 namespace pocketmine\world\format;
 
 final class LightArray{
