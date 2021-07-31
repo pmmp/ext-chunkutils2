@@ -259,7 +259,9 @@ static void sub_chunk_collect_garbage(sub_chunk_obj* object) {
 	}
 }
 
-PHP_METHOD(PhpSubChunk, __construct) {
+#define SUB_CHUNK_METHOD(name) PHP_METHOD(pocketmine_world_format_SubChunk, name)
+
+SUB_CHUNK_METHOD(__construct) {
 	zend_long emptyBlockId;
 	HashTable* htBlockLayers;
 	zval* skyLight = NULL;
@@ -300,7 +302,7 @@ PHP_METHOD(PhpSubChunk, __construct) {
 	}
 }
 
-PHP_METHOD(PhpSubChunk, isEmptyAuthoritative) {
+SUB_CHUNK_METHOD(isEmptyAuthoritative) {
 	zend_parse_parameters_none_throw();
 
 	auto intern = sub_chunk_this();
@@ -308,17 +310,17 @@ PHP_METHOD(PhpSubChunk, isEmptyAuthoritative) {
 	RETURN_BOOL(intern->blockLayers.empty());
 }
 
-PHP_METHOD(PhpSubChunk, isEmptyFast) {
+SUB_CHUNK_METHOD(isEmptyFast) {
 	zend_parse_parameters_none_throw();
 	RETURN_BOOL(sub_chunk_this()->blockLayers.empty());
 }
 
-PHP_METHOD(PhpSubChunk, getEmptyBlockId) {
+SUB_CHUNK_METHOD(getEmptyBlockId) {
 	zend_parse_parameters_none_throw();
 	RETURN_LONG(sub_chunk_this()->emptyBlockId);
 }
 
-PHP_METHOD(PhpSubChunk, getFullBlock) {
+SUB_CHUNK_METHOD(getFullBlock) {
 	zend_long x, y, z;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 3, 3)
@@ -335,7 +337,7 @@ PHP_METHOD(PhpSubChunk, getFullBlock) {
 	}
 }
 
-PHP_METHOD(PhpSubChunk, setFullBlock) {
+SUB_CHUNK_METHOD(setFullBlock) {
 	zend_long x, y, z, block;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 4, 4)
@@ -361,7 +363,7 @@ PHP_METHOD(PhpSubChunk, setFullBlock) {
 	blockLayer->container.set(x, y, z, block);
 }
 
-PHP_METHOD(PhpSubChunk, getBlockLayers) {
+SUB_CHUNK_METHOD(getBlockLayers) {
 	zend_parse_parameters_none_throw();
 
 	auto intern = sub_chunk_this();
@@ -374,7 +376,7 @@ PHP_METHOD(PhpSubChunk, getBlockLayers) {
 	}
 }
 
-PHP_METHOD(PhpSubChunk, getHighestBlockAt) {
+SUB_CHUNK_METHOD(getHighestBlockAt) {
 	zend_long x, z;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2)
@@ -406,7 +408,7 @@ static inline void ensure_light_array_initialized(light_array_obj** lightArray) 
 	}
 }
 
-PHP_METHOD(PhpSubChunk, getBlockSkyLightArray) {
+SUB_CHUNK_METHOD(getBlockSkyLightArray) {
 	zend_parse_parameters_none_throw();
 
 	auto intern = sub_chunk_this();
@@ -415,7 +417,7 @@ PHP_METHOD(PhpSubChunk, getBlockSkyLightArray) {
 	Z_ADDREF_P(return_value);
 }
 
-PHP_METHOD(PhpSubChunk, getBlockLightArray) {
+SUB_CHUNK_METHOD(getBlockLightArray) {
 	zend_parse_parameters_none_throw();
 
 	auto intern = sub_chunk_this();
@@ -436,36 +438,19 @@ PHP_METHOD(PhpSubChunk, getBlockLightArray) {
 	intern->lightArrayFieldName = fetch_from_zend_object<light_array_obj>(Z_OBJ_P(data)); \
 	Z_ADDREF_P(data);
 
-PHP_METHOD(PhpSubChunk, setBlockSkyLightArray) {
+SUB_CHUNK_METHOD(setBlockSkyLightArray) {
 	macro_SubChunk_setLightArray(skyLight);
 }
 
-PHP_METHOD(PhpSubChunk, setBlockLightArray) {
+SUB_CHUNK_METHOD(setBlockLightArray) {
 	macro_SubChunk_setLightArray(blockLight);
 }
 
-PHP_METHOD(PhpSubChunk, collectGarbage) {
+SUB_CHUNK_METHOD(collectGarbage) {
 	zend_parse_parameters_none_throw();
 
 	sub_chunk_collect_garbage(sub_chunk_this());
 }
-
-static zend_function_entry sub_chunk_class_methods[] = {
-	PHP_ME(PhpSubChunk, __construct, arginfo_class_pocketmine_world_format_SubChunk___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-	PHP_ME(PhpSubChunk, isEmptyAuthoritative, arginfo_class_pocketmine_world_format_SubChunk_isEmptyAuthoritative, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, isEmptyFast, arginfo_class_pocketmine_world_format_SubChunk_isEmptyFast, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, getEmptyBlockId, arginfo_class_pocketmine_world_format_SubChunk_getEmptyBlockId, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, getFullBlock, arginfo_class_pocketmine_world_format_SubChunk_getFullBlock, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, setFullBlock, arginfo_class_pocketmine_world_format_SubChunk_setFullBlock, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, getBlockLayers, arginfo_class_pocketmine_world_format_SubChunk_getBlockLayers, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, getHighestBlockAt, arginfo_class_pocketmine_world_format_SubChunk_getHighestBlockAt, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, getBlockSkyLightArray, arginfo_class_pocketmine_world_format_SubChunk_getBlockSkyLightArray, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, setBlockSkyLightArray, arginfo_class_pocketmine_world_format_SubChunk_setBlockSkyLightArray, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, getBlockLightArray, arginfo_class_pocketmine_world_format_SubChunk_getBlockLightArray, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, setBlockLightArray, arginfo_class_pocketmine_world_format_SubChunk_setBlockLightArray, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, collectGarbage, arginfo_class_pocketmine_world_format_SubChunk_collectGarbage, ZEND_ACC_PUBLIC)
-	PHP_FE_END
-};
 
 void register_sub_chunk_class() {
 	memcpy(&sub_chunk_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
@@ -474,7 +459,7 @@ void register_sub_chunk_class() {
 	sub_chunk_handlers.clone_obj = sub_chunk_clone;
 
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\SubChunk", sub_chunk_class_methods);
+	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\SubChunk", class_pocketmine_world_format_SubChunk_methods);
 	ce.create_object = sub_chunk_new;
 	ce.serialize = sub_chunk_serialize;
 	ce.unserialize = sub_chunk_unserialize;
