@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['7.2.34', '7.3.29', '7.4.21', '8.0.8']
+        php: ['8.0.8']
         valgrind: [0, 1]
 
     env:
