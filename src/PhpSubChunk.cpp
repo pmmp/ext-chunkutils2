@@ -463,7 +463,7 @@ static zend_function_entry sub_chunk_class_methods[] = {
 	PHP_ME(PhpSubChunk, setBlockSkyLightArray, arginfo_class_pocketmine_world_format_SubChunk_setBlockSkyLightArray, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpSubChunk, getBlockLightArray, arginfo_class_pocketmine_world_format_SubChunk_getBlockLightArray, ZEND_ACC_PUBLIC)
 	PHP_ME(PhpSubChunk, setBlockLightArray, arginfo_class_pocketmine_world_format_SubChunk_setBlockLightArray, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpSubChunk, collectGarbage, arginfo_collect, ZEND_ACC_PUBLIC)
+	PHP_ME(PhpSubChunk, collectGarbage, arginfo_class_pocketmine_world_format_SubChunk_collectGarbage, ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
 
