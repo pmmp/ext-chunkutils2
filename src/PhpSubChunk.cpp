@@ -43,28 +43,24 @@ static zend_object* sub_chunk_new(zend_class_entry* ce) {
 	return &result->std;
 }
 
-static zend_object* sub_chunk_clone(chunkutils2_handler_context* object) {
-	sub_chunk_obj* const old_object = fetch_intern(Z_OBJ_FROM_HANDLER_CONTEXT(object));
-	sub_chunk_obj* const new_object = fetch_intern(sub_chunk_new(Z_OBJ_FROM_HANDLER_CONTEXT(object)->ce));
-	zval zv;
+static zend_object* sub_chunk_clone(zend_object* object) {
+	sub_chunk_obj* const old_object = fetch_intern(object);
+	sub_chunk_obj* const new_object = fetch_intern(sub_chunk_new(object->ce));
 
 	new_object->emptyBlockId = old_object->emptyBlockId;
 	new(&new_object->blockLayers) std::vector<paletted_block_array_obj*>();
 	for (auto blockLayer : old_object->blockLayers) {
-		ZVAL_OBJ(&zv, &blockLayer->std);
-		auto clonedBlockLayer = fetch_from_zend_object<paletted_block_array_obj>(blockLayer->std.handlers->clone_obj(HANDLER_CONTEXT_FROM_ZVAL(&zv)));
+		auto clonedBlockLayer = fetch_from_zend_object<paletted_block_array_obj>(blockLayer->std.handlers->clone_obj(&blockLayer->std));
 		new_object->blockLayers.push_back(clonedBlockLayer);
 	}
 
 	auto blockLight = old_object->blockLight;
 	if (blockLight != nullptr) {
-		ZVAL_OBJ(&zv, &blockLight->std);
-		new_object->blockLight = fetch_from_zend_object<light_array_obj>(blockLight->std.handlers->clone_obj(HANDLER_CONTEXT_FROM_ZVAL(&zv)));
+		new_object->blockLight = fetch_from_zend_object<light_array_obj>(blockLight->std.handlers->clone_obj(&blockLight->std));
 	}
 	auto skyLight = old_object->skyLight;
 	if (skyLight != nullptr) {
-		ZVAL_OBJ(&zv, &skyLight->std);
-		new_object->skyLight = fetch_from_zend_object<light_array_obj>(skyLight->std.handlers->clone_obj(HANDLER_CONTEXT_FROM_ZVAL(&zv)));
+		new_object->skyLight = fetch_from_zend_object<light_array_obj>(skyLight->std.handlers->clone_obj(&skyLight->std));
 	}
 
 	zend_objects_clone_members(&new_object->std, &old_object->std); //copy user-assigned properties
@@ -134,7 +130,7 @@ static int sub_chunk_serialize(zval* obj, unsigned char** buffer, size_t* buf_le
 		php_var_serialize(&buf, &zv, &serialize_data);
 	}
 
-	ZVAL_ARR(&zv, zend_std_get_properties(HANDLER_CONTEXT_FROM_ZVAL(obj)));
+	ZVAL_ARR(&zv, zend_std_get_properties(Z_OBJ_P(obj)));
 	php_var_serialize(&buf, &zv, &serialize_data);
 
 	PHP_VAR_SERIALIZE_DESTROY(serialize_data);
@@ -221,7 +217,7 @@ static int sub_chunk_unserialize(zval* object, zend_class_entry* ce, const unsig
 		goto end;
 	}
 	if (zend_hash_num_elements(Z_ARRVAL_P(properties)) != 0) {
-		zend_hash_copy(zend_std_get_properties(HANDLER_CONTEXT_FROM_ZVAL(object)), Z_ARRVAL_P(properties), (copy_ctor_func_t)zval_add_ref);
+		zend_hash_copy(zend_std_get_properties(Z_OBJ_P(object)), Z_ARRVAL_P(properties), (copy_ctor_func_t)zval_add_ref);
 	}
 	result = SUCCESS;
 end:
