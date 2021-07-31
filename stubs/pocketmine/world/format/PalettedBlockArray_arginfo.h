@@ -1,5 +1,5 @@
 /* This is a generated file, edit the .stub.php file instead.
- * Stub hash: c36afa40fd6bb9634ccfd4ad44d779f3f2287ccc */
+ * Stub hash: b4c475ad2fa54e89d963c91c5ae7282fc4eede1b */
 
 ZEND_BEGIN_ARG_INFO_EX(arginfo_class_pocketmine_world_format_PalettedBlockArray___construct, 0, 0, 1)
 	ZEND_ARG_TYPE_INFO(0, fillEntry, IS_LONG, 0)

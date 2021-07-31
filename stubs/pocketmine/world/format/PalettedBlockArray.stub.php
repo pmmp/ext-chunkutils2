@@ -6,10 +6,16 @@ final class PalettedBlockArray{
 
 	public function __construct(int $fillEntry){}
 
+	/**
+	 * @param int[] $palette
+	 */
 	public static function fromData(int $bitsPerBlock, string $wordArray, array $palette) : \pocketmine\world\format\PalettedBlockArray{}
 
 	public function getWordArray() : string{}
 
+	/**
+	 * @return int[]
+	 */
 	public function getPalette() : array{}
 
 	public function getMaxPaletteSize() : int{}
