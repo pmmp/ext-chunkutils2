@@ -23,3 +23,4 @@ static class_name* alloc_custom_zend_object(zend_class_entry* ce, zend_object_ha
 }
 
 #endif
+
