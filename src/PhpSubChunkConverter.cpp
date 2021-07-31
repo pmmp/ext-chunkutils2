@@ -3,6 +3,7 @@
 #include "lib/SubChunkConverter.h"
 #include "ZendUtil.h"
 #include "PhpPalettedBlockArrayObj.h"
+#include "stubs/pocketmine/world/format/io/SubChunkConverter_arginfo.h"
 
 extern "C" {
 #include "php.h"
@@ -14,11 +15,6 @@ extern "C" {
 static Block flattenData(uint8_t id, uint8_t meta) {
 	return (id << 4) | meta;
 }
-
-ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_SubChunkConverter_convertSubChunk, 0, 2, pocketmine\\world\\format\\PalettedBlockArray, 0)
-ZEND_ARG_TYPE_INFO(0, idArray, IS_STRING, 0)
-ZEND_ARG_TYPE_INFO(0, metaArray, IS_STRING, 0)
-ZEND_END_ARG_INFO()
 
 PHP_METHOD(PhpSubChunkConverter, convertSubChunkXZY) {
 	zend_string *idArray;
@@ -69,13 +65,6 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkYZX) {
 	}
 }
 
-
-ZEND_BEGIN_ARG_WITH_RETURN_OBJ_INFO_EX(arginfo_SubChunkConverter_convertSubChunkFromLegacyColumn, 0, 3, pocketmine\\world\\format\\PalettedBlockArray, 0)
-ZEND_ARG_TYPE_INFO(0, idArray, IS_STRING, 0)
-ZEND_ARG_TYPE_INFO(0, metaArray, IS_STRING, 0)
-ZEND_ARG_TYPE_INFO(0, yOffset, IS_LONG, 0)
-ZEND_END_ARG_INFO()
-
 PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
 	zend_string *idArray;
 	zend_string *metaArray;
@@ -107,18 +96,15 @@ PHP_METHOD(PhpSubChunkConverter, convertSubChunkFromLegacyColumn) {
 	}
 }
 
-ZEND_BEGIN_ARG_INFO(arginfo_SubChunkConverter___construct, 0)
-ZEND_END_ARG_INFO()
-
 PHP_METHOD(PhpSubChunkConverter, __construct) {
 	//NOOP
 }
 
 static zend_function_entry subchunk_converter_class_methods[] = {
-	PHP_ME(PhpSubChunkConverter, convertSubChunkXZY, arginfo_SubChunkConverter_convertSubChunk, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_ME(PhpSubChunkConverter, convertSubChunkYZX, arginfo_SubChunkConverter_convertSubChunk, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_ME(PhpSubChunkConverter, convertSubChunkFromLegacyColumn, arginfo_SubChunkConverter_convertSubChunkFromLegacyColumn, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_ME(PhpSubChunkConverter, __construct, arginfo_SubChunkConverter___construct, ZEND_ACC_CTOR | ZEND_ACC_PRIVATE)
+	PHP_ME(PhpSubChunkConverter, convertSubChunkXZY, arginfo_class_pocketmine_world_format_io_SubChunkConverter_convertSubChunkXZY, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PhpSubChunkConverter, convertSubChunkYZX, arginfo_class_pocketmine_world_format_io_SubChunkConverter_convertSubChunkYZX, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PhpSubChunkConverter, convertSubChunkFromLegacyColumn, arginfo_class_pocketmine_world_format_io_SubChunkConverter_convertSubChunkFromLegacyColumn, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	PHP_ME(PhpSubChunkConverter, __construct, arginfo_class_pocketmine_world_format_io_SubChunkConverter___construct, ZEND_ACC_CTOR | ZEND_ACC_PRIVATE)
 	PHP_FE_END
 };
 
