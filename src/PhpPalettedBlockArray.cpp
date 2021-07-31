@@ -209,8 +209,9 @@ bool paletted_block_array_fill(paletted_block_array_obj *intern, zend_long fillE
 	return true;
 }
 /* PHP-land PalettedBlockArray methods */
+#define PALETTED_BLOCK_ARRAY_METHOD(name) PHP_METHOD(pocketmine_world_format_PalettedBlockArray, name)
 
-PHP_METHOD(PhpPalettedBlockArray, __construct) {
+PALETTED_BLOCK_ARRAY_METHOD(__construct) {
 	zend_long fillEntry;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
@@ -221,7 +222,7 @@ PHP_METHOD(PhpPalettedBlockArray, __construct) {
 	paletted_block_array_fill(intern, fillEntry);
 }
 
-PHP_METHOD(PhpPalettedBlockArray, fromData) {
+PALETTED_BLOCK_ARRAY_METHOD(fromData) {
 	zend_long bitsPerBlock = 1;
 	zend_string *wordArrayZstr;
 	zval *paletteZarray;
@@ -235,32 +236,32 @@ PHP_METHOD(PhpPalettedBlockArray, fromData) {
 	paletted_block_array_from_data(return_value, bitsPerBlock, wordArrayZstr, Z_ARRVAL_P(paletteZarray));
 }
 
-PHP_METHOD(PhpPalettedBlockArray, getWordArray) {
+PALETTED_BLOCK_ARRAY_METHOD(getWordArray) {
 	zend_parse_parameters_none_throw();
 
 	paletted_block_array_get_word_array(getThis(), return_value);
 }
 
-PHP_METHOD(PhpPalettedBlockArray, getPalette) {
+PALETTED_BLOCK_ARRAY_METHOD(getPalette) {
 	zend_parse_parameters_none_throw();
 
 	paletted_block_array_get_palette(getThis(), return_value);
 }
 
-PHP_METHOD(PhpPalettedBlockArray, getMaxPaletteSize) {
+PALETTED_BLOCK_ARRAY_METHOD(getMaxPaletteSize) {
 	zend_parse_parameters_none_throw();
 
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
 	RETURN_LONG(intern->container.getMaxPaletteSize());
 }
 
-PHP_METHOD(PhpPalettedBlockArray, getBitsPerBlock) {
+PALETTED_BLOCK_ARRAY_METHOD(getBitsPerBlock) {
 	zend_parse_parameters_none_throw();
 
 	paletted_block_array_get_bits_per_block(getThis(), return_value);
 }
 
-PHP_METHOD(PhpPalettedBlockArray, get) {
+PALETTED_BLOCK_ARRAY_METHOD(get) {
 	zend_long x, y, z;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 3, 3)
@@ -273,7 +274,7 @@ PHP_METHOD(PhpPalettedBlockArray, get) {
 	RETURN_LONG(intern->container.get(x, y, z));
 }
 
-PHP_METHOD(PhpPalettedBlockArray, set) {
+PALETTED_BLOCK_ARRAY_METHOD(set) {
 	zend_long x, y, z, val;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 4, 4)
@@ -287,7 +288,7 @@ PHP_METHOD(PhpPalettedBlockArray, set) {
 	intern->container.set(x, y, z, val);
 }
 
-PHP_METHOD(PhpPalettedBlockArray, replaceAll) {
+PALETTED_BLOCK_ARRAY_METHOD(replaceAll) {
 	zend_long oldVal, newVal;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 2, 2)
@@ -299,7 +300,7 @@ PHP_METHOD(PhpPalettedBlockArray, replaceAll) {
 	intern->container.replaceAll(oldVal, newVal);
 }
 
-PHP_METHOD(PhpPalettedBlockArray, collectGarbage) {
+PALETTED_BLOCK_ARRAY_METHOD(collectGarbage) {
 	zend_bool force = 0;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 0, 1)
@@ -311,7 +312,7 @@ PHP_METHOD(PhpPalettedBlockArray, collectGarbage) {
 	intern->container.collectGarbage(force ? true : false);
 }
 
-PHP_METHOD(PhpPalettedBlockArray, getExpectedWordArraySize) {
+PALETTED_BLOCK_ARRAY_METHOD(getExpectedWordArraySize) {
 	zend_long bitsPerBlock;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
@@ -333,21 +334,6 @@ PHP_METHOD(PhpPalettedBlockArray, getExpectedWordArraySize) {
 	}
 }
 
-static zend_function_entry paletted_block_array_class_methods[] = {
-	PHP_ME(PhpPalettedBlockArray, __construct, arginfo_class_pocketmine_world_format_PalettedBlockArray___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-	PHP_ME(PhpPalettedBlockArray, fromData, arginfo_class_pocketmine_world_format_PalettedBlockArray_fromData, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_ME(PhpPalettedBlockArray, getWordArray, arginfo_class_pocketmine_world_format_PalettedBlockArray_getWordArray, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpPalettedBlockArray, getPalette, arginfo_class_pocketmine_world_format_PalettedBlockArray_getPalette, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpPalettedBlockArray, getMaxPaletteSize, arginfo_class_pocketmine_world_format_PalettedBlockArray_getMaxPaletteSize, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpPalettedBlockArray, getBitsPerBlock, arginfo_class_pocketmine_world_format_PalettedBlockArray_getBitsPerBlock, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpPalettedBlockArray, get, arginfo_class_pocketmine_world_format_PalettedBlockArray_get, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpPalettedBlockArray, set, arginfo_class_pocketmine_world_format_PalettedBlockArray_set, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpPalettedBlockArray, replaceAll, arginfo_class_pocketmine_world_format_PalettedBlockArray_replaceAll, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpPalettedBlockArray, collectGarbage, arginfo_class_pocketmine_world_format_PalettedBlockArray_collectGarbage, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpPalettedBlockArray, getExpectedWordArraySize, arginfo_class_pocketmine_world_format_PalettedBlockArray_getExpectedWordArraySize, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_FE_END
-};
-
 void register_paletted_block_array_class() {
 	memcpy(&paletted_block_array_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	paletted_block_array_handlers.offset = XtOffsetOf(paletted_block_array_obj, std);
@@ -355,7 +341,7 @@ void register_paletted_block_array_class() {
 	paletted_block_array_handlers.clone_obj = paletted_block_array_clone;
 
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\PalettedBlockArray", paletted_block_array_class_methods);
+	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\PalettedBlockArray", class_pocketmine_world_format_PalettedBlockArray_methods);
 	ce.create_object = paletted_block_array_new;
 	ce.serialize = paletted_block_array_serialize;
 	ce.unserialize = paletted_block_array_unserialize;

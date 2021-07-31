@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * @generate-function-entries
+ */
+
 namespace pocketmine\world\format\io;
 
 final class SubChunkConverter{

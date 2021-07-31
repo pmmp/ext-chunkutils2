@@ -70,7 +70,9 @@ void light_array_fill(light_array_obj* object, zend_long level) {
 	new (&object->lightArray) LightArray(static_cast<uint8_t>(level));
 }
 
-PHP_METHOD(PhpLightArray, __construct) {
+#define LIGHT_ARRAY_METHOD(name) PHP_METHOD(pocketmine_world_format_LightArray, name)
+
+LIGHT_ARRAY_METHOD(__construct) {
 	zend_string* payload;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
@@ -89,7 +91,7 @@ PHP_METHOD(PhpLightArray, __construct) {
 	new (&object->lightArray) LightArray(span);
 }
 
-PHP_METHOD(PhpLightArray, fill) {
+LIGHT_ARRAY_METHOD(fill) {
 	zend_long level;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
@@ -105,7 +107,7 @@ PHP_METHOD(PhpLightArray, fill) {
 	light_array_fill(object, level);
 }
 
-PHP_METHOD(PhpLightArray, get) {
+LIGHT_ARRAY_METHOD(get) {
 	zend_long x, y, z;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 3, 3)
@@ -118,7 +120,7 @@ PHP_METHOD(PhpLightArray, get) {
 	RETURN_LONG(static_cast<zend_long>(object->lightArray.get(x & 0xf, y & 0xf, z & 0xf)));
 }
 
-PHP_METHOD(PhpLightArray, set) {
+LIGHT_ARRAY_METHOD(set) {
 	zend_long x, y, z, level;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 4, 4)
@@ -132,7 +134,7 @@ PHP_METHOD(PhpLightArray, set) {
 	object->lightArray.set(x & 0xf, y & 0xf, z & 0xf, static_cast<uint8_t>(level));
 }
 
-PHP_METHOD(PhpLightArray, getData) {
+LIGHT_ARRAY_METHOD(getData) {
 	zend_parse_parameters_none_throw();
 
 	auto object = fetch_from_zend_object<light_array_obj>(Z_OBJ_P(getThis()));
@@ -142,13 +144,13 @@ PHP_METHOD(PhpLightArray, getData) {
 	RETURN_STRINGL(reinterpret_cast<const char*>(span.data()), span.size_bytes());
 }
 
-PHP_METHOD(PhpLightArray, collectGarbage) {
+LIGHT_ARRAY_METHOD(collectGarbage) {
 	zend_parse_parameters_none_throw();
 
 	//TODO: we currently don't bother trying to save memory with copy-on-write tricks, to reduce implementation complexity.
 }
 
-PHP_METHOD(PhpLightArray, isUniform) {
+LIGHT_ARRAY_METHOD(isUniform) {
 	zend_long value;
 
 	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
@@ -163,17 +165,6 @@ PHP_METHOD(PhpLightArray, isUniform) {
 	RETURN_BOOL(object->lightArray.isUniform(value));
 }
 
-static zend_function_entry light_array_class_methods[] = {
-	PHP_ME(PhpLightArray, __construct, arginfo_class_pocketmine_world_format_LightArray___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-	PHP_ME(PhpLightArray, fill, arginfo_class_pocketmine_world_format_LightArray_fill, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-	PHP_ME(PhpLightArray, get, arginfo_class_pocketmine_world_format_LightArray_get, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpLightArray, set, arginfo_class_pocketmine_world_format_LightArray_set, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpLightArray, getData, arginfo_class_pocketmine_world_format_LightArray_getData, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpLightArray, collectGarbage, arginfo_class_pocketmine_world_format_LightArray_collectGarbage, ZEND_ACC_PUBLIC)
-	PHP_ME(PhpLightArray, isUniform, arginfo_class_pocketmine_world_format_LightArray_isUniform, ZEND_ACC_PUBLIC)
-	PHP_FE_END
-};
-
 void register_light_array_class() {
 	memcpy(&light_array_handlers, zend_get_std_object_handlers(), sizeof(zend_object_handlers));
 	light_array_handlers.offset = XtOffsetOf(light_array_obj, std);
@@ -181,7 +172,7 @@ void register_light_array_class() {
 	light_array_handlers.clone_obj = light_array_clone;
 
 	zend_class_entry ce;
-	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\LightArray", light_array_class_methods);
+	INIT_CLASS_ENTRY(ce, "pocketmine\\world\\format\\LightArray", class_pocketmine_world_format_LightArray_methods);
 	ce.create_object = light_array_new;
 	ce.serialize = light_array_serialize;
 	ce.unserialize = light_array_unserialize;
