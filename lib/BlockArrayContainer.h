@@ -154,7 +154,7 @@ public:
 		if (forceCollect || blockArray->needsGarbageCollection()) {
 			auto unique = blockArray->countUniqueBlocks();
 
-			if (getOptimalBitsPerBlock(unique) != blockArray->getBitsPerBlock()) {
+			if (unique != blockArray->getPaletteSize() || getOptimalBitsPerBlock(unique) != blockArray->getBitsPerBlock()) {
 				BlockArray *newArray = blockArrayFromCapacity(blockArray->get(0, 0, 0), unique + reserved);
 				assert(newArray != nullptr);
 				newArray->convertFrom(*blockArray);
