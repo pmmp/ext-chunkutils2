@@ -37,6 +37,18 @@ private:
 		throw std::invalid_argument("invalid capacity specified: " + std::to_string(capacity));
 	}
 
+	static VanillaPaletteSize getOptimalBitsPerBlock(unsigned short capacity) {
+#define BPB_MACRO(i) \
+		if (capacity <= PalettedBlockArray<VanillaPaletteSize::BPB_##i, Block>::MAX_PALETTE_SIZE) { \
+			return VanillaPaletteSize::BPB_##i; \
+		}
+
+		MACRO_PER_BITS_PER_BLOCK
+#undef BPB_MACRO
+
+		throw std::invalid_argument("invalid capacity specified: " + std::to_string(capacity));
+	}
+
 	BlockArray *blockArray = nullptr;
 
 public:
@@ -142,7 +154,7 @@ public:
 		if (forceCollect || blockArray->needsGarbageCollection()) {
 			auto unique = blockArray->countUniqueBlocks();
 
-			if (unique != blockArray->getPaletteSize()) {
+			if (getOptimalBitsPerBlock(unique) != blockArray->getBitsPerBlock()) {
 				BlockArray *newArray = blockArrayFromCapacity(blockArray->get(0, 0, 0), unique + reserved);
 				assert(newArray != nullptr);
 				newArray->convertFrom(*blockArray);
