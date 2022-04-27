@@ -10,6 +10,7 @@
 #include <array>
 #include <climits>
 #include <exception>
+#include <sstream>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -28,6 +29,7 @@ protected:
 	bool mayNeedGC = false;
 public:
 	static const unsigned char COORD_BIT_SIZE = 4; //number of coordinate bits per dimension
+	static const unsigned int COORD_MASK = ~(~0 << COORD_BIT_SIZE);
 	static const unsigned char ARRAY_DIM = 1 << COORD_BIT_SIZE; //length of one side of chunk
 	static const unsigned short ARRAY_CAPACITY = ARRAY_DIM * ARRAY_DIM * ARRAY_DIM; //number of blocks in chunk
 
@@ -73,10 +75,11 @@ private:
 	static const unsigned char BLOCKS_PER_WORD = sizeof(Word) * CHAR_BIT / BITS_PER_BLOCK_INT;
 	static const Word BLOCK_MASK = (1 << BITS_PER_BLOCK_INT) - 1;
 	static const unsigned short WORD_COUNT = Base::ARRAY_CAPACITY / BLOCKS_PER_WORD + (Base::ARRAY_CAPACITY % BLOCKS_PER_WORD ? 1 : 0);
+
+	static const unsigned int MAX_PALETTE_OFFSET = 1 << BITS_PER_BLOCK_INT;
 public:
 	static const unsigned int PAYLOAD_SIZE = WORD_COUNT * sizeof(Word);
-	static const unsigned short MAX_PALETTE_SIZE = (1 << BITS_PER_BLOCK_INT) < Base::ARRAY_CAPACITY ? (1 << BITS_PER_BLOCK_INT) : Base::ARRAY_CAPACITY;
-
+	static const unsigned int MAX_PALETTE_SIZE = MAX_PALETTE_OFFSET < Base::ARRAY_CAPACITY ? MAX_PALETTE_OFFSET : Base::ARRAY_CAPACITY;
 private:
 	std::array<Word, WORD_COUNT> words;
 
@@ -113,6 +116,33 @@ private:
 		words[wordIdx] = (words[wordIdx] & ~(BLOCK_MASK << shift)) | (offset << shift);
 	}
 
+	void validate() const {
+		if (MAX_PALETTE_OFFSET == MAX_PALETTE_SIZE && nextPaletteIndex >= MAX_PALETTE_SIZE) {
+			//Every possible offset representable is valid, therefore no validation is required
+			//this is an uncommon case, but more frequent in small palettes, which is a win because small palettes are more
+			//expensive to verify than big ones due to more bitwise operations needed to extract the offsets
+			//for 16 bpb, offsets may point beyond the end of the palette even at full capacity, so they must always be checked
+			return;
+		}
+		for(auto wordIdx = 0; wordIdx < words.size(); wordIdx++){
+			const auto word = words[wordIdx];
+			for (auto shift = 0; shift < BLOCKS_PER_WORD * BITS_PER_BLOCK_INT; shift += BITS_PER_BLOCK_INT) {
+				const auto offset = (word >> shift) & BLOCK_MASK;
+				if (offset >= nextPaletteIndex) {
+					std::ostringstream ss;
+
+					const auto blockIdx = (wordIdx * BLOCKS_PER_WORD) + (shift / BITS_PER_BLOCK_INT);
+					const auto x = (blockIdx >> (Base::COORD_BIT_SIZE * 2)) & Base::COORD_MASK;
+					const auto z = (blockIdx >> Base::COORD_BIT_SIZE) & Base::COORD_MASK;
+					const auto y = blockIdx & Base::COORD_MASK;
+
+					ss << "offset table contains invalid offset " << offset << " at position " << x << "," << y << "," << z << " (max valid offset: " << (nextPaletteIndex - 1) << ")";
+					throw std::range_error(ss.str());
+				}
+			}
+		}
+	}
+
 public:
 
 	PalettedBlockArray(Block block) {
@@ -135,6 +165,9 @@ public:
 		memcpy(words.data(), wordArray.data(), sizeof(words));
 		memcpy(palette.data(), paletteEntries.data(), paletteEntries.size() * sizeof(Block));
 		nextPaletteIndex = (unsigned short)paletteEntries.size();
+
+		validate();
+
 		this->mayNeedGC = true;
 	}
 
