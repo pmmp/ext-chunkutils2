@@ -29,7 +29,7 @@ protected:
 	bool mayNeedGC = false;
 public:
 	static const unsigned char COORD_BIT_SIZE = 4; //number of coordinate bits per dimension
-	static const unsigned int COORD_MASK = ~(~0 << COORD_BIT_SIZE);
+	static const unsigned int COORD_MASK = ~(~0U << COORD_BIT_SIZE);
 	static const unsigned char ARRAY_DIM = 1 << COORD_BIT_SIZE; //length of one side of chunk
 	static const unsigned short ARRAY_CAPACITY = ARRAY_DIM * ARRAY_DIM * ARRAY_DIM; //number of blocks in chunk
 
