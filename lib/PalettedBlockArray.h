@@ -96,7 +96,6 @@ private:
 	}
 
 	inline void find(Coord x, Coord y, Coord z, unsigned short &wordIdx, unsigned char &shift) const {
-		assert(x < Base::ARRAY_DIM && y < Base::ARRAY_DIM && z < Base::ARRAY_DIM);
 		unsigned short idx = getArrayOffset(x, y, z);
 
 		wordIdx = idx / BLOCKS_PER_WORD;
