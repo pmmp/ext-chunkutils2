@@ -124,9 +124,14 @@ private:
 			//for 16 bpb, offsets may point beyond the end of the palette even at full capacity, so they must always be checked
 			return;
 		}
+		auto blockCount = 0;
 		for(auto wordIdx = 0; wordIdx < words.size(); wordIdx++){
 			const auto word = words[wordIdx];
-			for (auto shift = 0; shift < BLOCKS_PER_WORD * BITS_PER_BLOCK_INT; shift += BITS_PER_BLOCK_INT) {
+			for (
+				auto shift = 0;
+				blockCount < Base::ARRAY_CAPACITY && shift < BLOCKS_PER_WORD * BITS_PER_BLOCK_INT;
+				blockCount++, shift += BITS_PER_BLOCK_INT
+			) {
 				const auto offset = (word >> shift) & BLOCK_MASK;
 				if (offset >= nextPaletteIndex) {
 					std::ostringstream ss;
