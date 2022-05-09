@@ -125,7 +125,7 @@ private:
 			return;
 		}
 		auto blockCount = 0;
-		for(auto wordIdx = 0; wordIdx < words.size(); wordIdx++){
+		for (auto wordIdx = 0; wordIdx < words.size(); wordIdx++) {
 			const auto word = words[wordIdx];
 			for (
 				auto shift = 0;
