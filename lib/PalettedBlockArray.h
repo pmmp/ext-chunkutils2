@@ -89,7 +89,10 @@ private:
 	unsigned short nextPaletteIndex = 0;
 
 	inline unsigned short getArrayOffset(Coord x, Coord y, Coord z) const {
-		return (x << (Base::COORD_BIT_SIZE * 2)) | (z << Base::COORD_BIT_SIZE) | y;
+		return
+			((x & Base::COORD_MASK) << (Base::COORD_BIT_SIZE * 2)) |
+			((z & Base::COORD_MASK) << Base::COORD_BIT_SIZE) |
+			(y & Base::COORD_MASK);
 	}
 
 	inline void find(Coord x, Coord y, Coord z, unsigned short &wordIdx, unsigned char &shift) const {

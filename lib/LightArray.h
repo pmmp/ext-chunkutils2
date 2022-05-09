@@ -28,7 +28,7 @@ private:
 	std::array<uint8_t, DATA_SIZE> mValues;
 
 	static inline void index(const uint8_t x, const uint8_t y, const uint8_t z, unsigned int &offset, unsigned int &shift) {
-		offset = (x << 7) | (z << 3) | (y >> 1);
+		offset = ((x & 0xf) << 7) | ((z & 0xf) << 3) | ((y & 0xf) >> 1);
 		shift = (y & 1) << 2;
 	}
 
