@@ -41,7 +41,7 @@ jobs:
         if: steps.php-build-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v2
         with:
-          repository: php-build/php-build
+          repository: pmmp/php-build
           path: php-build
 
       - name: Compile PHP
