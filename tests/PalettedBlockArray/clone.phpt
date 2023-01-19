@@ -5,6 +5,8 @@ Test that PalettedBlockArray works correctly after cloning
 --FILE--
 <?php
 
+error_reporting(E_ALL & ~E_DEPRECATED); //dynamic property deprecation warning
+
 $p1 = new \pocketmine\world\format\PalettedBlockArray(1);
 var_dump($p1->get(0, 0, 0));
 $p1->test = "hi";

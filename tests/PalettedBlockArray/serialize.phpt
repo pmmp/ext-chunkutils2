@@ -5,6 +5,8 @@ Test that PalettedBlockArray works correctly after serialize/unserialize
 --FILE--
 <?php
 
+error_reporting(E_ALL & ~E_DEPRECATED); //silence dynamic property warning in 8.2
+
 $p1 = new \pocketmine\world\format\PalettedBlockArray(1);
 var_dump($p1->get(0, 0, 0));
 
