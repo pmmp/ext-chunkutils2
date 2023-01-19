@@ -32,7 +32,7 @@ jobs:
 
       - name: Restore PHP build cache
         id: php-build-cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/php
           key: php-build-debug-${{ matrix.php }}-valgrind-${{ matrix.valgrind }}
