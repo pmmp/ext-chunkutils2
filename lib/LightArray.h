@@ -65,8 +65,9 @@ public:
 	}
 
 	bool isUniform(const LightLevel value) const {
+		uint8_t byte = (value << 4) | value;
 		for (auto i : mValues) {
-			if (i != value) {
+			if (i != byte) {
 				return false;
 			}
 		}
