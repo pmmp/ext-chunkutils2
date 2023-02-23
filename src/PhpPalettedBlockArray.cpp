@@ -82,7 +82,9 @@ static void paletted_block_array_get_palette(zval *object, zval *return_value) {
 
 	array_init_size(return_value, palette.size());
 	for (unsigned short i = 0; i < palette.size(); ++i) {
-		add_index_long(return_value, i, palette[i]);
+		zval zv;
+		ZVAL_LONG(&zv, palette[i]);
+		zend_hash_next_index_insert_new(Z_ARRVAL_P(return_value), &zv);
 	}
 }
 
