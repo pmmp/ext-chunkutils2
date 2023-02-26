@@ -26,7 +26,7 @@
 extern zend_module_entry chunkutils2_module_entry;
 #define phpext_chunkutils2_ptr &chunkutils2_module_entry
 
-#define PHP_CHUNKUTILS2_VERSION "0.3.4"
+#define PHP_CHUNKUTILS2_VERSION "0.3.5-dev"
 
 #ifdef ZTS
 #include "TSRM.h"
