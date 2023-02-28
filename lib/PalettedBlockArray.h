@@ -168,14 +168,14 @@ private:
 			if (BITS_PER_BLOCK_INT == 1) {
 				//For 1 bits-per-block, we can only reach this point if the palette isn't full, which means that only offset 0 is set.
 				//This means we can save a few instructions and just check the word directly for non-zero bits.
-				invalid |= word > 0;
+				invalid |= word;
 			} else {
 				Word carryVector = (~expected & word) | (~(expected ^ word) & (expected - word));
-				invalid |= carryVector > 0;
+				invalid |= carryVector;
 			}
 		}
 
-		if (invalid > 0) {
+		if (invalid != 0) {
 			//If we detected an error, use the old, slow method to locate the (first) source of errors
 			//this allows giving a detailed error message
 			//if the palette is valid, we can avoid this slow path entirely, which is the most likely outcome.
