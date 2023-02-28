@@ -118,14 +118,8 @@ private:
 		words[wordIdx] = (words[wordIdx] & ~(BLOCK_MASK << shift)) | (offset << shift);
 	}
 
-	void validate() const {
-		if (MAX_PALETTE_OFFSET == MAX_PALETTE_SIZE && nextPaletteIndex >= MAX_PALETTE_SIZE) {
-			//Every possible offset representable is valid, therefore no validation is required
-			//this is an uncommon case, but more frequent in small palettes, which is a win because small palettes are more
-			//expensive to verify than big ones due to more bitwise operations needed to extract the offsets
-			//for 16 bpb, offsets may point beyond the end of the palette even at full capacity, so they must always be checked
-			return;
-		}
+	void locateAndReportInvalidOffset() const {
+		//Slow path, to allow giving detailed errors when a problem has already been detected by the fast path
 		auto blockCount = 0;
 		for (auto wordIdx = 0; wordIdx < words.size(); wordIdx++) {
 			const auto word = words[wordIdx];
@@ -147,6 +141,54 @@ private:
 					throw std::range_error(ss.str());
 				}
 			}
+		}
+	}
+
+#ifdef _MSC_VER
+	//If this function gets inlined, MSVC 16.29 does not want to vectorize it :(
+	__declspec(noinline)
+#endif
+	bool fastValidate() const {
+		Word invalid = 0;
+
+		Word expected = 0;
+		for (unsigned int shift = 0; shift < BLOCKS_PER_WORD * BITS_PER_BLOCK_INT; shift += BITS_PER_BLOCK_INT) {
+			expected |= ((nextPaletteIndex - 1) << shift);
+		}
+
+		//Fast path - use carry-out vectors to detect invalid offsets
+		//This trick is borrowed from https://devblogs.microsoft.com/oldnewthing/20190301-00/?p=101076
+		//We can't detect exactly where the error is with this approach, but we leave that up to the slow code if we detect an error
+		for (auto wordIdx = 0; wordIdx < words.size(); wordIdx++) {
+			const auto word = words[wordIdx];
+
+			if (BITS_PER_BLOCK_INT == 1) {
+				//For 1 bits-per-block, we can only reach this point if the palette isn't full, which means that only offset 0 is set.
+				//This means we can save a few instructions and just check the word directly for non-zero bits.
+				invalid |= word;
+			} else {
+				Word carryVector = (~expected & word) | (~(expected ^ word) & (expected - word));
+				invalid |= carryVector;
+			}
+		}
+
+		return invalid == 0;
+	}
+
+	void validate() const {
+		if (MAX_PALETTE_OFFSET == MAX_PALETTE_SIZE && nextPaletteIndex >= MAX_PALETTE_SIZE) {
+			//Every possible offset representable is valid, therefore no validation is required
+			//this is an uncommon case, but more frequent in small palettes, which is a win because small palettes are more
+			//expensive to verify than big ones due to more bitwise operations needed to extract the offsets
+			//for 16 bpb, offsets may point beyond the end of the palette even at full capacity, so they must always be checked
+			return;
+		}
+
+		if (!fastValidate()) {
+			//If we detected an error, use the old, slow method to locate the (first) source of errors
+			//this allows giving a detailed error message
+			//if the palette is valid, we can avoid this slow path entirely, which is the most likely outcome.
+			locateAndReportInvalidOffset();
 		}
 	}
 
