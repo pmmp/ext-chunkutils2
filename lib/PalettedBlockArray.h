@@ -165,8 +165,14 @@ private:
 		for (auto wordIdx = 0; wordIdx < words.size(); wordIdx++) {
 			const auto word = words[wordIdx];
 
-			Word carryVector = (~expected & word) | (~(expected ^ word) & (expected - word));
-			invalid |= carryVector > 0;
+			if (BITS_PER_BLOCK_INT == 1) {
+				//For 1 bits-per-block, we can only reach this point if the palette isn't full, which means that only offset 0 is set.
+				//This means we can save a few instructions and just check the word directly for non-zero bits.
+				invalid |= word > 0;
+			} else {
+				Word carryVector = (~expected & word) | (~(expected ^ word) & (expected - word));
+				invalid |= carryVector > 0;
+			}
 		}
 
 		if (invalid > 0) {
