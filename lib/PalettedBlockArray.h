@@ -144,6 +144,10 @@ private:
 		}
 	}
 
+#ifdef _MSC_VER
+	//If this function gets inlined, MSVC 16.29 does not want to vectorize it :(
+	__declspec(noinline)
+#endif
 	bool fastValidate() const {
 		Word invalid = 0;
 
@@ -155,7 +159,6 @@ private:
 		//Fast path - use carry-out vectors to detect invalid offsets
 		//This trick is borrowed from https://devblogs.microsoft.com/oldnewthing/20190301-00/?p=101076
 		//We can't detect exactly where the error is with this approach, but we leave that up to the slow code if we detect an error
-		//We put this in a separate function to make sure MSVC doesn't get scared out of vectorizing it
 		for (auto wordIdx = 0; wordIdx < words.size(); wordIdx++) {
 			const auto word = words[wordIdx];
 
