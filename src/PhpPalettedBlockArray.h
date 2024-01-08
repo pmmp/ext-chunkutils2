@@ -18,8 +18,6 @@ PHP_METHOD(PhpPalettedBlockArray, replace);
 PHP_METHOD(PhpPalettedBlockArray, replaceAll);
 PHP_METHOD(PhpPalettedBlockArray, getExpectedWordArraySize);
 
-extern zend_class_entry *paletted_block_array_entry;
-
 void register_paletted_block_array_class();
 
 #endif

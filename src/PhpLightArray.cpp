@@ -15,11 +15,6 @@ extern "C" {
 zend_class_entry* light_array_entry;
 static zend_object_handlers light_array_handlers;
 
-typedef struct {
-	LightArray lightArray;
-	zend_object std;
-} light_array_obj;
-
 /* internal object handlers */
 
 static zend_object* light_array_new(zend_class_entry* class_type) {
@@ -71,6 +66,10 @@ static int light_array_unserialize(zval* obj, zend_class_entry* ce, const unsign
 	return SUCCESS;
 }
 
+void light_array_fill(light_array_obj* object, zend_long level) {
+	new (&object->lightArray) LightArray(static_cast<uint8_t>(level));
+}
+
 #define LIGHT_ARRAY_METHOD(name) PHP_METHOD(pocketmine_world_format_LightArray, name)
 
 LIGHT_ARRAY_METHOD(__construct) {
@@ -105,8 +104,7 @@ LIGHT_ARRAY_METHOD(fill) {
 
 	object_init_ex(return_value, light_array_entry);
 	auto object = fetch_from_zend_object<light_array_obj>(Z_OBJ_P(return_value));
-
-	new (&object->lightArray) LightArray(static_cast<uint8_t>(level));
+	light_array_fill(object, level);
 }
 
 LIGHT_ARRAY_METHOD(get) {
