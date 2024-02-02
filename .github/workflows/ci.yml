@@ -35,7 +35,7 @@ jobs:
           echo "PHP_BUILD_CONFIGURE_OPTS=--with-valgrind" >> $GITHUB_ENV
 
       - name: Restore PHP build cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         id: php-build-cache
         with:
           path: ${{ github.workspace }}/php 
