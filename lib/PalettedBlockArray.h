@@ -273,9 +273,9 @@ public:
 private:
 	const size_t VECTORIZED_LOOKUP_CHUNK_SIZE = 32;
 
-	bool _vectorizedLookupOffset(Block val, short offset) const {
+	bool _vectorizedLookupOffset(Block val, int offset) const {
 		int result = 0;
-		for (auto i = 0; i < VECTORIZED_LOOKUP_CHUNK_SIZE; i++) {
+		for (int i = 0; i < VECTORIZED_LOOKUP_CHUNK_SIZE; i++) {
 			result |= palette[i + offset] == val;
 		}
 		return result != 0;
