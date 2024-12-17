@@ -288,7 +288,7 @@ private:
 		//For large ones the cost is worth it because scalar search is slow due to early exit
 		//This tells us approximately where to find a block in the palette if it exists
 		if (MAX_PALETTE_SIZE >= VECTORIZED_LOOKUP_CHUNK_SIZE * 2) {
-			for (; offset < nextPaletteIndex; offset += VECTORIZED_LOOKUP_CHUNK_SIZE) {
+			for (; offset + VECTORIZED_LOOKUP_CHUNK_SIZE <= nextPaletteIndex; offset += VECTORIZED_LOOKUP_CHUNK_SIZE) {
 				if (_vectorizedLookupOffset(val, offset)) {
 					break;
 				}
