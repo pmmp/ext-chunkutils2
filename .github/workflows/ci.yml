@@ -87,7 +87,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results-${{ matrix.php }}-valgrind-${{ matrix.valgrind }}
+          name: test-results-${{ matrix.php }}-debug-${{ matrix.debug }}-valgrind-${{ matrix.valgrind }}-zts-${{ matrix.zts }}
           path: |
             ${{ github.workspace }}/tests/*
             !${{ github.workspace }}/tests/*.phpt
