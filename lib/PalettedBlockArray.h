@@ -270,17 +270,47 @@ public:
 		return palette[offset];
 	}
 
+private:
+	const size_t VECTORIZED_LOOKUP_CHUNK_SIZE = 32;
+
+	bool _vectorizedLookupOffset(Block val, short offset) const {
+		int result = 0;
+		for (auto i = 0; i < VECTORIZED_LOOKUP_CHUNK_SIZE; i++) {
+			result |= palette[i + offset] == val;
+		}
+		return result != 0;
+	}
+
+	short _lookupOffset(Block val) const {
+		short offset = 0;
+
+		//Vectorized lookup is not worth the cost for small palettes
+		//For large ones the cost is worth it because scalar search is slow due to early exit
+		//This tells us approximately where to find a block in the palette if it exists
+		if (MAX_PALETTE_SIZE >= VECTORIZED_LOOKUP_CHUNK_SIZE * 2) {
+			for (; offset < nextPaletteIndex; offset += CHUNK_SIZE) {
+				if (_vectorizedLookupOffset(val, offset)) {
+					break;
+				}
+			}
+		}
+
+		//Once we have the approximate offset, we can do a scalar search to find the exact one
+		for (; offset < nextPaletteIndex; ++offset) {
+			if (palette[offset] == val) {
+				return offset;
+			}
+		}
+
+		return -1;
+	}
+
+public:
 	bool set(Coord x, Coord y, Coord z, Block val) {
 		//TODO (suggested by sandertv): check performance when recording last written block and palette offset - might improve performance for repetetive writes
 
-		short offset = -1;
+		short offset = _lookupOffset(val);
 		bool needGC = true;
-		for (short i = 0; i < nextPaletteIndex; ++i) {
-			if (palette[i] == val) {
-				offset = i;
-				break;
-			}
-		}
 
 		if (offset == -1) {
 			if (nextPaletteIndex >= MAX_PALETTE_SIZE) {
