@@ -333,9 +333,7 @@ private:
 	template<typename BlockArray>
 	void _fastUpsize(const BlockArray& otherArray) {
 		auto otherPalette = otherArray.getPalette();
-
-		palette.~Palette();
-		new (&palette) Palette(otherPalette);
+		this->palette = Palette(otherPalette);
 
 		for (Coord x = 0; x < Base::ARRAY_DIM; ++x) {
 			for (Coord z = 0; z < Base::ARRAY_DIM; ++z) {
