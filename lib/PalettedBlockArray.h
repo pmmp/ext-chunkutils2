@@ -46,6 +46,7 @@ public:
 	virtual const gsl::span<const char> getWordArray() const = 0;
 
 	virtual const gsl::span<const Block> getPalette() const = 0;
+	virtual void setPalette(const gsl::span<Block>& newPalette) = 0;
 	virtual unsigned short getPaletteSize() const = 0;
 	virtual unsigned short getMaxPaletteSize() const = 0;
 
@@ -232,6 +233,18 @@ public:
 		return palette.getPalette();
 	}
 
+	void setPalette(const gsl::span<Block>& newPalette) {
+		if (newPalette.size() != palette.size()) {
+			throw std::length_error(
+				"new palette must be the same size as the old one, expected " +
+				std::to_string(palette.size()) +
+				" but received " +
+				std::to_string(newPalette.size())
+			);
+		}
+		palette = Palette(newPalette);
+	}
+
 	unsigned short getPaletteSize() const {
 		return palette.size();
 	}
@@ -393,6 +406,13 @@ public:
 
 	const gsl::span<const Block> getPalette() const {
 		return gsl::span<const Block>(&block, 1);
+	}
+
+	void setPalette(const gsl::span<Block>& newPalette) {
+		if (newPalette.size() != 1) {
+			throw std::length_error("new palette must be the same size as the old one, expected 1 but received " + std::to_string(newPalette.size()));
+		}
+		block = newPalette[0];
 	}
 
 	unsigned short getPaletteSize() const {

@@ -30,13 +30,7 @@ static inline bool checkPaletteEntrySize(zend_long v) {
 	return true;
 }
 
-static bool paletted_block_array_from_data(zval *return_value, zend_long bitsPerBlock, zend_string *wordArrayZstr, HashTable *paletteHt) {
-	object_init_ex(return_value, paletted_block_array_entry);
-	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
-
-	gsl::span<uint8_t> wordArray((uint8_t*)ZSTR_VAL(wordArrayZstr), (uint8_t*)(ZSTR_VAL(wordArrayZstr) + ZSTR_LEN(wordArrayZstr)));
-	std::vector<Block> palette;
-
+static bool palette_data_from_array(HashTable* paletteHt, std::vector<Block>& palette) {
 	HashPosition pos;
 	zval *current;
 	Block b;
@@ -53,6 +47,20 @@ static bool paletted_block_array_from_data(zval *return_value, zend_long bitsPer
 		}
 		b = (Block)Z_LVAL_P(current);
 		palette.push_back(b);
+	}
+
+	return true;
+}
+
+static bool paletted_block_array_from_data(zval *return_value, zend_long bitsPerBlock, zend_string *wordArrayZstr, HashTable *paletteHt) {
+	object_init_ex(return_value, paletted_block_array_entry);
+	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(return_value));
+
+	gsl::span<uint8_t> wordArray((uint8_t*)ZSTR_VAL(wordArrayZstr), (uint8_t*)(ZSTR_VAL(wordArrayZstr) + ZSTR_LEN(wordArrayZstr)));
+	std::vector<Block> palette;
+
+	if (!palette_data_from_array(paletteHt, palette)) {
+		return false;
 	}
 
 	try {
@@ -85,6 +93,24 @@ static void paletted_block_array_get_palette(zval *object, zval *return_value) {
 		zval zv;
 		ZVAL_LONG(&zv, palette[i]);
 		zend_hash_next_index_insert_new(Z_ARRVAL_P(return_value), &zv);
+	}
+}
+
+static bool paletted_block_array_set_palette(zval* object, HashTable* paletteHt) {
+	paletted_block_array_obj* intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(object));
+
+	std::vector<Block> palette;
+	if (!palette_data_from_array(paletteHt, palette)) {
+		return false;
+	}
+
+	try {
+		intern->container.setPalette(palette);
+		return true;
+	}
+	catch (std::length_error& e) {
+		zend_value_error("%s", e.what());
+		return false;
 	}
 }
 
@@ -246,6 +272,16 @@ PALETTED_BLOCK_ARRAY_METHOD(getPalette) {
 	zend_parse_parameters_none_throw();
 
 	paletted_block_array_get_palette(getThis(), return_value);
+}
+
+PALETTED_BLOCK_ARRAY_METHOD(setPalette) {
+	zval* paletteZarray;
+
+	ZEND_PARSE_PARAMETERS_START_EX(ZEND_PARSE_PARAMS_THROW, 1, 1)
+		Z_PARAM_ARRAY(paletteZarray)
+	ZEND_PARSE_PARAMETERS_END();
+
+	paletted_block_array_set_palette(getThis(), Z_ARRVAL_P(paletteZarray));
 }
 
 PALETTED_BLOCK_ARRAY_METHOD(getMaxPaletteSize) {

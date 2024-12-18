@@ -108,6 +108,10 @@ public:
 		return blockArray->getPalette();
 	}
 
+	void setPalette(const gsl::span<Block>& newPalette) {
+		blockArray->setPalette(newPalette);
+	}
+
 	unsigned short getMaxPaletteSize() const {
 		return blockArray->getMaxPaletteSize();
 	}

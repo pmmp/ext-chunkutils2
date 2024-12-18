@@ -22,6 +22,13 @@ final class PalettedBlockArray{
 	 */
 	public function getPalette() : array{}
 
+	/**
+	 * The input array must be the same size as the current palette
+	 * Keys are ignored. Only input order is considered.
+	 * @param int[] $palette
+	 */
+	public function setPalette(array $palette) : void{}
+
 	public function getMaxPaletteSize() : int{}
 
 	public function getBitsPerBlock() : int{}
