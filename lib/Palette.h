@@ -28,7 +28,7 @@ private:
 	std::array<Block, MAX_PALETTE_SIZE> palette;
 	unsigned short nextPaletteIndex = 0;
 
-	void initFromData(gsl::span<const Block> paletteEntries) {
+	void initFromData(const gsl::span<const Block> paletteEntries) {
 		PaletteUtils<MAX_PALETTE_SIZE>::checkSize(paletteEntries.size());
 
 		memcpy(palette.data(), paletteEntries.data(), paletteEntries.size() * sizeof(Block));
@@ -39,11 +39,11 @@ public:
 		palette[nextPaletteIndex++] = block;
 	}
 
-	SmallPalette(std::vector<Block>& paletteEntries) {
-		initFromData(gsl::span<const Block>(paletteEntries.data(), paletteEntries.size()));
+	SmallPalette(const std::vector<Block>& paletteEntries) {
+		initFromData(paletteEntries);
 	}
 
-	SmallPalette(gsl::span<const Block>& paletteEntries) {
+	SmallPalette(const gsl::span<const Block>& paletteEntries) {
 		initFromData(paletteEntries);
 	}
 
@@ -100,7 +100,7 @@ private:
 	std::vector<Block> palette;
 	std::unordered_map<Block, unsigned int> blockToOffset;
 
-	void initFromData(gsl::span<const Block> paletteEntries) {
+	void initFromData(const gsl::span<const Block> paletteEntries) {
 		PaletteUtils<MAX_PALETTE_SIZE>::checkSize(paletteEntries.size());
 
 		palette = std::vector<Block>(paletteEntries.begin(), paletteEntries.end());
@@ -115,11 +115,11 @@ public:
 		blockToOffset[block] = 0;
 	}
 
-	LargePalette(std::vector<Block>& paletteEntries) {
-		initFromData(gsl::span<const Block>(paletteEntries.data(), paletteEntries.size()));
+	LargePalette(const std::vector<Block>& paletteEntries) {
+		initFromData(paletteEntries);
 	}
 
-	LargePalette(gsl::span<const Block>& paletteEntries) {
+	LargePalette(const gsl::span<const Block>& paletteEntries) {
 		initFromData(paletteEntries);
 	}
 
