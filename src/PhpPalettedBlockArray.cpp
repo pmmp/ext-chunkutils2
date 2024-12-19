@@ -224,7 +224,18 @@ end:
 	return result;
 }
 
-
+bool paletted_block_array_fill(paletted_block_array_obj *intern, zend_long fillEntry) {
+	if (!checkPaletteEntrySize(fillEntry)) {
+		return false;
+	}
+	try {
+		new(&intern->container) NormalBlockArrayContainer((Block)fillEntry, 0);
+	} catch (std::exception& e) {
+		zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%s", e.what());
+		return false;
+	}
+	return true;
+}
 /* PHP-land PalettedBlockArray methods */
 #define PALETTED_BLOCK_ARRAY_METHOD(name) PHP_METHOD(pocketmine_world_format_PalettedBlockArray, name)
 
@@ -235,17 +246,8 @@ PALETTED_BLOCK_ARRAY_METHOD(__construct) {
 		Z_PARAM_LONG(fillEntry)
 	ZEND_PARSE_PARAMETERS_END();
 
-	if (!checkPaletteEntrySize(fillEntry)) {
-		return;
-	}
-
 	paletted_block_array_obj *intern = fetch_from_zend_object<paletted_block_array_obj>(Z_OBJ_P(getThis()));
-	try {
-		new(&intern->container) NormalBlockArrayContainer((Block)fillEntry, 0);
-	}
-	catch (std::exception& e) {
-		zend_throw_exception_ex(spl_ce_RuntimeException, 0, "%s", e.what());
-	}
+	paletted_block_array_fill(intern, fillEntry);
 }
 
 PALETTED_BLOCK_ARRAY_METHOD(fromData) {
