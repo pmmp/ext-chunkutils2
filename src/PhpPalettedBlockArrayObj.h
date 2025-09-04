@@ -15,4 +15,7 @@ typedef struct {
 	zend_object std;
 } paletted_block_array_obj;
 
+extern zend_class_entry* paletted_block_array_entry;
+
+bool paletted_block_array_fill(paletted_block_array_obj* intern, zend_long fillEntry);
 #endif

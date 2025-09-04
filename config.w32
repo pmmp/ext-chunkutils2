@@ -8,7 +8,7 @@ if (PHP_CHUNKUTILS2 != "no") {
 	ADD_FLAG("CFLAGS_CHUNKUTILS2", "/EHsc /Qvec-report:1");
 	ADD_SOURCES(
 		configure_module_dirname + "/src",
-		"PhpLightArray.cpp PhpPalettedBlockArray.cpp PhpSubChunkConverter.cpp",
+		"PhpLightArray.cpp PhpPalettedBlockArray.cpp PhpSubChunk.cpp PhpSubChunkConverter.cpp",
 		"chunkutils2"
 	);
 }
