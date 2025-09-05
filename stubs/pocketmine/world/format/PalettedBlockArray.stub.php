@@ -12,6 +12,7 @@ final class PalettedBlockArray{
 
 	/**
 	 * @param int[] $palette
+	 * @throws PalettedBlockArrayLoadException if the provided data is invalid in any way
 	 */
 	public static function fromData(int $bitsPerBlock, string $wordArray, array|string $palette) : \pocketmine\world\format\PalettedBlockArray{}
 

@@ -23,7 +23,7 @@ foreach($samples as $k => $values){
 	try{
 		PalettedBlockArray::fromData($values[0], $values[1], $values[2]);
 		echo "$k not corrupted\n";
-	}catch(\Exception $e){
+	}catch(PalettedBlockArrayLoadException $e){
 		echo "$k " . $e->getMessage() . "\n";
 	}
 }

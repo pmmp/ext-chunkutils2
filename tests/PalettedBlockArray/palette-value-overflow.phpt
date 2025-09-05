@@ -8,6 +8,8 @@ if(PHP_INT_SIZE !== 8) die("skip only for 64-bit");
 --FILE--
 <?php
 
+use pocketmine\world\format\PalettedBlockArrayLoadException;
+
 $values = [PHP_INT_MIN, -1, PHP_INT_MAX, (1 << 32)];
 
 foreach($values as $v){
@@ -21,7 +23,7 @@ foreach($values as $v){
 	try{
 		$palette = \pocketmine\world\format\PalettedBlockArray::fromData(1, str_repeat("\x00", 512), [$v]);
 		var_dump("bad");
-	}catch(\InvalidArgumentException $e){
+	}catch(PalettedBlockArrayLoadException $e){
 		echo $e->getMessage() . "\n";
 	}
 }
