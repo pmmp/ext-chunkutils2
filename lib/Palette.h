@@ -99,14 +99,12 @@ class LargePalette final {
 private:
 	std::vector<Block> palette;
 	std::unordered_map<Block, unsigned int> blockToOffset;
+	unsigned int lowestUnscanned = 0;
 
 	void initFromData(const gsl::span<const Block> paletteEntries) {
 		PaletteUtils<MAX_PALETTE_SIZE>::checkSize(paletteEntries.size());
 
 		palette = std::vector<Block>(paletteEntries.begin(), paletteEntries.end());
-		for (unsigned int i = 0; i < palette.size(); ++i) {
-			blockToOffset[palette[i]] = i;
-		}
 	}
 
 public:
@@ -149,6 +147,21 @@ public:
 		if (it != blockToOffset.end()) {
 			return it->second;
 		}
+
+		//Lookup map is lazily populated to avoid a performance penalty on data load
+		//Since it's possible for an array to go its whole lifespan without any writes,
+		//there's little sense paying a performance penalty on load to pre-populate it
+		//Previously we would've had to do a scan like this anyway, but with the offset
+		//map cache we can get more mileage out of it by avoiding such large scans on
+		//subsequent writes
+		for (unsigned int offset = lowestUnscanned; offset < palette.size(); ++offset) {
+			blockToOffset[palette[offset]] = offset;
+			if (palette[offset] == val) {
+				lowestUnscanned = offset + 1;
+				return offset;
+			}
+		}
+		lowestUnscanned = palette.size();
 
 		if (palette.size() >= MAX_PALETTE_SIZE) {
 			return -1;
