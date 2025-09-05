@@ -72,7 +72,7 @@ static bool paletted_block_array_from_data(zval *return_value, zend_long bitsPer
 	gsl::span<uint8_t> wordArray((uint8_t*)ZSTR_VAL(wordArrayZstr), (uint8_t*)(ZSTR_VAL(wordArrayZstr) + ZSTR_LEN(wordArrayZstr)));
 	std::vector<Block> palette;
 
-	assert(paletteHt != nullptr && paletteZstr != nullptr);
+	assert(paletteHt != nullptr || paletteZstr != nullptr);
 
 	if (paletteHt != nullptr && !palette_data_from_array(paletteHt, palette)) {
 		return false;
