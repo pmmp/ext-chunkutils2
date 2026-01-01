@@ -27,7 +27,7 @@ jobs:
       CFLAGS: "-march=x86-64 -ftree-vectorize -fopt-info-vec"
       CXXFLAGS: "-march=x86-64 -ftree-vectorize -fopt-info-vec"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Install Valgrind
         if: matrix.valgrind == '1'
@@ -37,7 +37,7 @@ jobs:
           echo "PHP_BUILD_CONFIGURE_OPTS=--with-valgrind" >> $GITHUB_ENV
 
       - name: Restore PHP build cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: php-build-cache
         with:
           path: ${{ github.workspace }}/php 
@@ -87,7 +87,7 @@ jobs:
 
       - name: Upload test results
         if: failure()
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: test-results-${{ matrix.php }}-debug-${{ matrix.debug }}-valgrind-${{ matrix.valgrind }}-zts-${{ matrix.zts }}
           path: |
